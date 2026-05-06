@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TinyPost Auth</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="card" id="status-card" aria-live="polite">
+        <h1 class="title">TinyPost Auth</h1>
+        <p class="subtitle">Einfaches Supabase-Login ohne Framework.</p>
+
+        <div id="alert" class="alert hidden" role="status"></div>
+
+        <div id="loading" class="loading" aria-busy="true">
+          Initialisiere Supabase…
+        </div>
+
+        <div id="auth-view" class="hidden">
+          <form id="auth-form" novalidate>
+            <label for="email" class="label">E-Mail</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              class="input"
+              autocomplete="email"
+              placeholder="name@beispiel.de"
+              required
+            />
+
+            <label for="password" class="label">Passwort</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              class="input"
+              autocomplete="current-password"
+              placeholder="Mindestens 6 Zeichen"
+              minlength="6"
+              required
+            />
+
+            <div class="button-row">
+              <button id="login-btn" type="submit" class="btn btn-primary">Login</button>
+              <button id="register-btn" type="button" class="btn">Registrieren</button>
+            </div>
+          </form>
+
+          <div class="divider" aria-hidden="true"></div>
+
+          <div class="magic-link-box">
+            <p class="hint">Passwort vergessen oder ohne Passwort einloggen?</p>
+            <button id="magic-link-btn" type="button" class="btn btn-ghost">Magic Link senden</button>
+          </div>
+        </div>
+
+        <div id="dashboard-view" class="hidden">
+          <h2 class="dashboard-title">Dashboard</h2>
+          <p class="hint" id="user-info"></p>
+          <button id="logout-btn" type="button" class="btn btn-primary">Logout</button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

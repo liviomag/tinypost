@@ -215,6 +215,9 @@ body {
   justify-content: center;
   padding: 20px;
 }
+.modal.hidden {
+  display: none;
+}
 .modal-card {
   width: min(100%, 560px);
   background: var(--surface);

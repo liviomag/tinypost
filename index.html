@@ -147,8 +147,20 @@
                 <button id="gantt-close-modal-btn" type="button" class="btn modal-close-btn" aria-label="Popup schließen">Schließen</button>
               </div>
               <form id="gantt-form" class="gantt-form" novalidate>
+                <label for="gantt-title" class="label">Titel</label>
+                <input id="gantt-title" name="gantt-title" type="text" class="input" required />
+
                 <label for="gantt-name" class="label">Name / Systemname</label>
                 <input id="gantt-name" name="gantt-name" type="text" class="input" required />
+
+                <label for="gantt-position-mode" class="label">Position</label>
+                <select id="gantt-position-mode" class="input">
+                  <option value="new">Neue Position anlegen</option>
+                  <option value="existing">Bestehende Position verwenden</option>
+                </select>
+
+                <label for="gantt-position-id" class="label">Bestehende Position-ID</label>
+                <select id="gantt-position-id" class="input"></select>
 
                 <label for="gantt-start" class="label">Startdatum</label>
                 <input id="gantt-start" name="gantt-start" type="date" class="input" required />

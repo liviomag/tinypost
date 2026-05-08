@@ -10,6 +10,7 @@
     selectedOrderId: null,
     selectedOrderName: null,
     ganttEntries: [],
+    ganttPositions: [],
   };
 
   const dom = {
@@ -34,7 +35,10 @@
     forgotPasswordBtn: document.getElementById('forgot-password-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     ganttForm: document.getElementById('gantt-form'),
+    ganttTitle: document.getElementById('gantt-title'),
     ganttName: document.getElementById('gantt-name'),
+    ganttPositionMode: document.getElementById('gantt-position-mode'),
+    ganttPositionId: document.getElementById('gantt-position-id'),
     ganttStart: document.getElementById('gantt-start'),
     ganttEnd: document.getElementById('gantt-end'),
     ganttChart: document.getElementById('gantt-chart'),
@@ -125,19 +129,53 @@
     }
     const { data, error } = await state.supabase
       .from('gantt_entries')
-      .select('id,name,start_date,end_date')
+      .select('id,name,title,position_id,entry_code,calendar_week,calendar_year,start_date,end_date')
       .eq('order_id', state.selectedOrderId)
       .order('start_date', { ascending: true });
     if (error) throw error;
     state.ganttEntries = (data ?? []).map((row) => ({
       id: row.id,
       name: row.name,
+      title: row.title ?? row.name,
+      positionId: row.position_id,
+      entryCode: row.entry_code,
+      calendarWeek: row.calendar_week,
+      calendarYear: row.calendar_year,
       startDate: row.start_date,
       endDate: row.end_date,
     }));
     renderGanttChart();
   }
 
+
+  async function fetchGanttPositions() {
+    if (!state.selectedOrderId) { state.ganttPositions = []; renderPositionOptions(); return; }
+    const { data, error } = await state.supabase
+      .from('gantt_positions')
+      .select('id,title,created_at')
+      .eq('order_id', state.selectedOrderId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    state.ganttPositions = data ?? [];
+    renderPositionOptions();
+  }
+
+  function renderPositionOptions() {
+    dom.ganttPositionId.innerHTML = '';
+    if (!state.ganttPositions.length) {
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = 'Noch keine Position vorhanden';
+      dom.ganttPositionId.appendChild(option);
+      return;
+    }
+    state.ganttPositions.forEach((position) => {
+      const option = document.createElement('option');
+      option.value = position.id;
+      option.textContent = `${position.title} (${position.id.slice(0, 8)})`;
+      dom.ganttPositionId.appendChild(option);
+    });
+  }
   function renderOrderList() {
     dom.orderList.innerHTML = '';
     if (!state.orders.length) {
@@ -167,6 +205,7 @@
         state.selectedOrderId = order.id;
         state.selectedOrderName = order.name;
         renderOrderList();
+        await fetchGanttPositions();
         await fetchGanttEntries();
         showTimelineDetail();
       };
@@ -244,7 +283,7 @@
       const label = document.createElement('div');
       label.className = 'gantt-row-label';
       const name = document.createElement('span');
-      name.textContent = entry.name;
+      name.textContent = `${entry.title} · ${entry.name} · Pos ${entry.positionId ? entry.positionId.slice(0, 8) : '-'} · KW ${entry.calendarWeek ?? '-'}${entry.calendarYear ? `/${entry.calendarYear}` : ''}`;
       label.appendChild(name);
       const deleteButton = document.createElement('button');
       deleteButton.type = 'button';
@@ -283,15 +322,51 @@
     await fetchGanttEntries();
   }
 
-  async function createGanttEntry(name, startDate, endDate) {
-    const { error } = await state.supabase.from('gantt_entries').insert({
+  async function createGanttEntry({ title, name, startDate, endDate, positionMode, existingPositionId }) {
+    const now = new Date();
+    const weekInfo = getISOWeek(now.toISOString().slice(0, 10));
+    let positionId = existingPositionId;
+
+    if (positionMode === 'new') {
+      const { data: createdPosition, error: positionError } = await state.supabase
+        .from('gantt_positions')
+        .insert({
+          order_id: state.selectedOrderId,
+          user_id: state.currentUser.id,
+          title,
+        })
+        .select('id')
+        .single();
+      if (positionError) throw positionError;
+      positionId = createdPosition.id;
+    }
+
+    if (!positionId) throw new Error('Bitte eine Position auswählen oder neu anlegen.');
+
+    const entryCode = `GE-${weekInfo.year}-${String(weekInfo.week).padStart(2, '0')}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const { data: createdEntry, error } = await state.supabase.from('gantt_entries').insert({
       order_id: state.selectedOrderId,
       user_id: state.currentUser.id,
+      position_id: positionId,
+      entry_code: entryCode,
+      calendar_week: weekInfo.week,
+      calendar_year: weekInfo.year,
+      title,
       name,
       start_date: startDate,
       end_date: endDate,
-    });
+    }).select('id').single();
     if (error) throw error;
+
+    const { error: eventError } = await state.supabase.from('gantt_position_events').insert({
+      position_id: positionId,
+      gantt_entry_id: createdEntry.id,
+      event_type: positionMode === 'new' ? 'created' : 'updated',
+      event_note: positionMode === 'new' ? 'Initialer Eintrag' : 'Eintrag auf bestehende Position verschoben/ergänzt',
+    });
+    if (eventError) throw eventError;
+
+    await fetchGanttPositions();
     await fetchGanttEntries();
   }
 
@@ -324,6 +399,7 @@
         showDashboardView(data.session.user);
         showOrdersOverview();
         await fetchOrders();
+        await fetchGanttPositions();
         await fetchGanttEntries();
       } else showAuthView();
       state.supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -331,7 +407,8 @@
           showDashboardView(session.user);
           showOrdersOverview();
           await fetchOrders();
-          await fetchGanttEntries();
+          await fetchGanttPositions();
+        await fetchGanttEntries();
         } else showAuthView();
       });
     } catch (error) {
@@ -369,12 +446,16 @@
     dom.ganttCancelBtn.addEventListener('click', closeGanttModal);
     dom.ganttForm.addEventListener('submit', async (event) => {
       event.preventDefault();
+      const title = dom.ganttTitle.value.trim();
       const name = dom.ganttName.value.trim();
+      const positionMode = dom.ganttPositionMode.value;
+      const existingPositionId = dom.ganttPositionId.value;
       const startDate = dom.ganttStart.value;
       const endDate = dom.ganttEnd.value;
-      if (!name || !startDate || !endDate) return showAlert('error', 'Bitte alle Felder ausfüllen.');
+      if (!title || !name || !startDate || !endDate) return showAlert('error', 'Bitte alle Felder ausfüllen.');
+      if (positionMode === 'existing' && !existingPositionId) return showAlert('error', 'Bitte eine bestehende Position auswählen.');
       if (startDate > endDate) return showAlert('error', 'Enddatum darf nicht vor Startdatum liegen.');
-      await createGanttEntry(name, startDate, endDate);
+      await createGanttEntry({ title, name, startDate, endDate, positionMode, existingPositionId });
       closeGanttModal();
       showAlert('success', 'Gantt-Eintrag gespeichert.');
     });

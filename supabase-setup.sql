@@ -178,6 +178,13 @@ do $$
 begin
   begin
     alter table public.gantt_entries
+      add column if not exists position_id uuid;
+  exception
+    when duplicate_column then null;
+  end;
+
+  begin
+    alter table public.gantt_entries
       add constraint gantt_entries_position_fk
       foreign key (position_id) references public.gantt_positions(id) on delete set null;
   exception

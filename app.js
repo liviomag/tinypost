@@ -109,6 +109,14 @@
   function openGanttModal() { dom.ganttModal.classList.remove('hidden'); }
   function closeGanttModal() { dom.ganttModal.classList.add('hidden'); dom.ganttForm.reset(); }
 
+
+  function isMissingGanttTitleColumnError(error) {
+    const code = error?.code || error?.originalError?.code;
+    if (code === '42703') return true;
+    const combined = `${error?.message ?? ''} ${error?.details ?? ''} ${error?.hint ?? ''}`;
+    return combined.includes('gantt_entries.title');
+  }
+
   async function fetchOrders() {
     const { data, error } = await state.supabase
       .from('orders')
@@ -140,7 +148,7 @@
 
     let { data, error } = await query;
 
-    if (error && error.message?.includes('gantt_entries.title')) {
+    if (error && isMissingGanttTitleColumnError(error)) {
       state.supportsGanttEntryTitle = false;
       ({ data, error } = await state.supabase
         .from('gantt_entries')
@@ -379,7 +387,7 @@
 
     let { data: createdEntry, error } = await state.supabase.from('gantt_entries').insert(insertPayload).select('id').single();
 
-    if (error && error.message?.includes('gantt_entries.title')) {
+    if (error && isMissingGanttTitleColumnError(error)) {
       state.supportsGanttEntryTitle = false;
       const { title: _ignored, ...fallbackPayload } = insertPayload;
       ({ data: createdEntry, error } = await state.supabase.from('gantt_entries').insert(fallbackPayload).select('id').single());

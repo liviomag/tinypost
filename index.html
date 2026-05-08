@@ -105,40 +105,60 @@
         </div>
 
         <div id="dashboard-view" class="hidden">
-          <h2 class="dashboard-title">Dashboard</h2>
-          <p class="hint" id="user-info"></p>
+          <div class="dashboard-header">
+            <div>
+              <h2 class="dashboard-title">Dashboard</h2>
+              <p class="hint" id="user-info"></p>
+            </div>
+            <div class="dashboard-actions">
+              <button id="open-gantt-modal-btn" type="button" class="btn btn-primary">Eindruck erfassen</button>
+              <button id="logout-btn" type="button" class="btn">Logout</button>
+            </div>
+          </div>
 
           <section class="gantt-section" aria-labelledby="gantt-heading">
             <div class="gantt-header-row">
-              <h3 id="gantt-heading" class="gantt-title">Projekt-Timeline</h3>
-              <p class="gantt-subtitle">Lokales Gantt-Diagramm (nur im Browser gespeichert)</p>
-            </div>
-
-            <form id="gantt-form" class="gantt-form" novalidate>
-              <div class="gantt-form-grid">
-                <div>
-                  <label for="gantt-name" class="label">Name / Systemname</label>
-                  <input id="gantt-name" name="gantt-name" type="text" class="input" required />
-                </div>
-                <div>
-                  <label for="gantt-start" class="label">Startdatum</label>
-                  <input id="gantt-start" name="gantt-start" type="date" class="input" required />
-                </div>
-                <div>
-                  <label for="gantt-end" class="label">Enddatum</label>
-                  <input id="gantt-end" name="gantt-end" type="date" class="input" required />
-                </div>
+              <div>
+                <h3 id="gantt-heading" class="gantt-title">Projekt-Timeline</h3>
+                <p class="gantt-subtitle">Lokales Gantt-Diagramm (nur im Browser gespeichert)</p>
               </div>
-              <button id="gantt-save-btn" type="submit" class="btn btn-primary gantt-save-btn">Eintrag speichern</button>
-            </form>
+              <div class="gantt-nav" aria-label="Gantt-Navigation">
+                <button id="gantt-prev-week-btn" type="button" class="btn">← Eine Woche zurück</button>
+                <button id="gantt-next-week-btn" type="button" class="btn">Eine Woche vor →</button>
+              </div>
+            </div>
 
             <div id="gantt-empty" class="gantt-empty">Noch keine Gantt-Einträge vorhanden.</div>
             <div id="gantt-chart" class="gantt-chart" aria-live="polite"></div>
           </section>
-
-          <button id="logout-btn" type="button" class="btn btn-primary">Logout</button>
         </div>
       </section>
     </main>
+
+    <div id="gantt-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="gantt-modal-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="gantt-modal-title" class="modal-title">Eindruck erfassen</h3>
+          <button id="close-gantt-modal-btn" type="button" class="btn">Schliessen</button>
+        </div>
+        <form id="gantt-form" class="gantt-form" novalidate>
+          <div class="gantt-form-grid">
+            <div>
+              <label for="gantt-name" class="label">Name / Systemname</label>
+              <input id="gantt-name" name="gantt-name" type="text" class="input" required />
+            </div>
+            <div>
+              <label for="gantt-start" class="label">Startdatum</label>
+              <input id="gantt-start" name="gantt-start" type="date" class="input" required />
+            </div>
+            <div>
+              <label for="gantt-end" class="label">Enddatum</label>
+              <input id="gantt-end" name="gantt-end" type="date" class="input" required />
+            </div>
+          </div>
+          <button id="gantt-save-btn" type="submit" class="btn btn-primary gantt-save-btn">Eintrag speichern</button>
+        </form>
+      </div>
+    </div>
   </body>
 </html>

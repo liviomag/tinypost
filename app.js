@@ -8,6 +8,7 @@
     currentUser: null,
     orders: [],
     selectedOrderId: null,
+    selectedOrderName: null,
     ganttEntries: [],
   };
 
@@ -47,6 +48,9 @@
     orderForm: document.getElementById('order-form'),
     orderName: document.getElementById('order-name'),
     selectedOrderLabel: document.getElementById('selected-order-label'),
+    ordersOverview: document.getElementById('orders-overview'),
+    timelineDetail: document.getElementById('timeline-detail'),
+    backToOrdersBtn: document.getElementById('back-to-orders-btn'),
   };
 
   function setLoading(isLoading, text = 'Lade…') {
@@ -87,13 +91,23 @@
     dom.statusCard.classList.add('dashboard-fullscreen');
   }
 
+  function showOrdersOverview() {
+    dom.ordersOverview.classList.remove('hidden');
+    dom.timelineDetail.classList.add('hidden');
+  }
+
+  function showTimelineDetail() {
+    dom.ordersOverview.classList.add('hidden');
+    dom.timelineDetail.classList.remove('hidden');
+  }
+
   function openGanttModal() { dom.ganttModal.classList.remove('hidden'); }
   function closeGanttModal() { dom.ganttModal.classList.add('hidden'); dom.ganttForm.reset(); }
 
   async function fetchOrders() {
     const { data, error } = await state.supabase
       .from('orders')
-      .select('id,name,created_at')
+      .select('id,name,created_at,user_id')
       .order('created_at', { ascending: false });
     if (error) throw error;
     state.orders = data ?? [];
@@ -134,16 +148,36 @@
     dom.orderEmpty.classList.add('hidden');
 
     state.orders.forEach((order) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = `btn order-item ${order.id === state.selectedOrderId ? 'order-item-active' : ''}`;
-      button.textContent = order.name;
-      button.addEventListener('click', async () => {
+      const row = document.createElement('tr');
+      row.className = order.id === state.selectedOrderId ? 'order-row-active' : '';
+      row.tabIndex = 0;
+
+      const nameCell = document.createElement('td');
+      nameCell.textContent = order.name;
+      const createdAtCell = document.createElement('td');
+      createdAtCell.textContent = new Date(order.created_at).toLocaleDateString('de-DE');
+      const createdByCell = document.createElement('td');
+      createdByCell.textContent = order.user_id;
+
+      row.appendChild(nameCell);
+      row.appendChild(createdAtCell);
+      row.appendChild(createdByCell);
+
+      const openOrder = async () => {
         state.selectedOrderId = order.id;
+        state.selectedOrderName = order.name;
         renderOrderList();
         await fetchGanttEntries();
+        showTimelineDetail();
+      };
+      row.addEventListener('click', openOrder);
+      row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openOrder();
+        }
       });
-      dom.orderList.appendChild(button);
+      dom.orderList.appendChild(row);
     });
 
     const selected = state.orders.find((order) => order.id === state.selectedOrderId);
@@ -288,12 +322,14 @@
       const { data } = await state.supabase.auth.getSession();
       if (data.session?.user) {
         showDashboardView(data.session.user);
+        showOrdersOverview();
         await fetchOrders();
         await fetchGanttEntries();
       } else showAuthView();
       state.supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
           showDashboardView(session.user);
+          showOrdersOverview();
           await fetchOrders();
           await fetchGanttEntries();
         } else showAuthView();
@@ -314,6 +350,7 @@
     dom.registerForm.addEventListener('submit', (e) => { e.preventDefault(); register(); });
     dom.backToLoginBtn.addEventListener('click', () => setAuthScreen('login'));
     dom.logoutBtn.addEventListener('click', logout);
+    dom.backToOrdersBtn.addEventListener('click', showOrdersOverview);
 
     dom.orderForm.addEventListener('submit', async (event) => {
       event.preventDefault();

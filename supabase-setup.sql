@@ -176,20 +176,31 @@ create table if not exists public.gantt_position_events (
 
 do $$
 begin
-  begin
-    alter table public.gantt_entries
-      add column if not exists position_id uuid;
-  exception
-    when duplicate_column then null;
-  end;
+  if exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'gantt_entries'
+  ) then
+    if not exists (
+      select 1 from information_schema.columns
+      where table_schema = 'public' and table_name = 'gantt_entries' and column_name = 'position_id'
+    ) then
+      alter table public.gantt_entries add column position_id uuid;
+    end if;
 
-  begin
-    alter table public.gantt_entries
-      add constraint gantt_entries_position_fk
-      foreign key (position_id) references public.gantt_positions(id) on delete set null;
-  exception
-    when duplicate_object then null;
-  end;
+    if not exists (
+      select 1
+      from pg_constraint c
+      join pg_class t on t.oid = c.conrelid
+      join pg_namespace n on n.oid = t.relnamespace
+      where n.nspname = 'public'
+        and t.relname = 'gantt_entries'
+        and c.conname = 'gantt_entries_position_fk'
+    ) then
+      alter table public.gantt_entries
+        add constraint gantt_entries_position_fk
+        foreign key (position_id) references public.gantt_positions(id) on delete set null;
+    end if;
+  end if;
 end $$;
 
 drop trigger if exists on_gantt_positions_updated on public.gantt_positions;

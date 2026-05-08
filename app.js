@@ -11,6 +11,7 @@
   };
 
   const dom = {
+    statusCard: document.getElementById('status-card'),
     loading: document.getElementById('loading'),
     alert: document.getElementById('alert'),
     authView: document.getElementById('auth-view'),
@@ -30,7 +31,6 @@
     backToLoginBtn: document.getElementById('back-to-login-btn'),
     forgotPasswordBtn: document.getElementById('forgot-password-btn'),
     logoutBtn: document.getElementById('logout-btn'),
-    userInfo: document.getElementById('user-info'),
     ganttForm: document.getElementById('gantt-form'),
     ganttName: document.getElementById('gantt-name'),
     ganttStart: document.getElementById('gantt-start'),
@@ -80,14 +80,15 @@
   function showAuthView() {
     dom.authView.classList.remove('hidden');
     dom.dashboardView.classList.add('hidden');
+    dom.statusCard.classList.remove('dashboard-fullscreen');
     setAuthScreen('login');
   }
 
-  function showDashboardView(user) {
+  function showDashboardView(_user) {
     dom.authView.classList.add('hidden');
     dom.dashboardView.classList.remove('hidden');
     dom.dashboardView.classList.add('dashboard-expanded');
-    dom.userInfo.textContent = user?.email ? `Eingeloggt als ${user.email}` : '';
+    dom.statusCard.classList.add('dashboard-fullscreen');
     renderGanttChart();
   }
 
@@ -183,10 +184,9 @@
     headLabel.textContent = 'Eintrag';
     header.appendChild(headLabel);
 
-    weeks.forEach((week, idx) => {
+    weeks.forEach((week) => {
       const cell = document.createElement('div');
       cell.className = 'gantt-week-cell';
-      if ((idx + 1) % 4 === 0) cell.classList.add('week-block-end');
       cell.textContent = `KW ${week.week}`;
       header.appendChild(cell);
     });
@@ -213,19 +213,31 @@
 
       row.appendChild(label);
 
-      const startIndex = getWeekIndex(weeks, entry.startDate);
-      const endIndex = getWeekIndex(weeks, entry.endDate);
+      const start = new Date(`${entry.startDate}T00:00:00`);
+      const end = new Date(`${entry.endDate}T23:59:59`);
 
-      weeks.forEach((_, idx) => {
+      weeks.forEach((week) => {
         const slot = document.createElement('div');
         slot.className = 'gantt-week-slot';
-        if ((idx + 1) % 4 === 0) slot.classList.add('week-block-end');
 
-        if (startIndex !== -1 && endIndex !== -1 && idx >= startIndex && idx <= endIndex) {
-          const bar = document.createElement('div');
-          bar.className = 'gantt-bar';
-          if (idx === startIndex) bar.textContent = entry.name;
-          slot.appendChild(bar);
+        const weekStart = getStartOfISOWeek(new Date(Date.UTC(week.year, 0, 4 + (week.week - 1) * 7)));
+        const monday = new Date(Date.UTC(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate()));
+
+        for (let dayIdx = 0; dayIdx < 7; dayIdx += 1) {
+          const dayCell = document.createElement('div');
+          dayCell.className = 'gantt-day-slot';
+          const dayDate = new Date(monday);
+          dayDate.setUTCDate(monday.getUTCDate() + dayIdx);
+          const localDay = new Date(dayDate.getUTCFullYear(), dayDate.getUTCMonth(), dayDate.getUTCDate());
+
+          if (localDay >= start && localDay <= end) {
+            dayCell.classList.add('active');
+            if (localDay.toDateString() === start.toDateString()) dayCell.classList.add('entry-start');
+            if (localDay.toDateString() === end.toDateString()) dayCell.classList.add('entry-end');
+            if (dayIdx === 0) dayCell.classList.add('week-start');
+          }
+
+          slot.appendChild(dayCell);
         }
 
         row.appendChild(slot);

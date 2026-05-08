@@ -12,6 +12,7 @@
     ganttEntries: [],
     ganttPositions: [],
     supportsGanttEntryTitle: null,
+    supportsGanttEntryCode: null,
   };
 
   const dom = {
@@ -110,11 +111,11 @@
   function closeGanttModal() { dom.ganttModal.classList.add('hidden'); dom.ganttForm.reset(); }
 
 
-  function isMissingGanttTitleColumnError(error) {
+  function isMissingGanttColumnError(error, columnName) {
     const code = error?.code || error?.originalError?.code;
-    if (code === '42703') return true;
-    const combined = `${error?.message ?? ''} ${error?.details ?? ''} ${error?.hint ?? ''}`;
-    return combined.includes('gantt_entries.title');
+    if (code !== '42703') return false;
+    const combined = `${error?.message ?? ''} ${error?.details ?? ''} ${error?.hint ?? ''}`.toLowerCase();
+    return combined.includes(`gantt_entries.${columnName}`) || combined.includes(`column ${columnName}`);
   }
 
   async function fetchOrders() {
@@ -137,26 +138,31 @@
       return;
     }
 
-    const selectWithTitle = 'id,name,title,position_id,entry_code,calendar_week,calendar_year,start_date,end_date';
-    const selectWithoutTitle = 'id,name,position_id,entry_code,calendar_week,calendar_year,start_date,end_date';
+    const selectedColumns = ['id', 'name', 'position_id', 'calendar_week', 'calendar_year', 'start_date', 'end_date'];
+    if (state.supportsGanttEntryTitle !== false) selectedColumns.splice(2, 0, 'title');
+    if (state.supportsGanttEntryCode !== false) selectedColumns.splice(4, 0, 'entry_code');
 
     let query = state.supabase
       .from('gantt_entries')
-      .select(state.supportsGanttEntryTitle === false ? selectWithoutTitle : selectWithTitle)
+      .select(selectedColumns.join(','))
       .eq('order_id', state.selectedOrderId)
       .order('start_date', { ascending: true });
 
     let { data, error } = await query;
 
-    if (error && isMissingGanttTitleColumnError(error)) {
+    if (error && isMissingGanttColumnError(error, 'title')) {
       state.supportsGanttEntryTitle = false;
-      ({ data, error } = await state.supabase
-        .from('gantt_entries')
-        .select(selectWithoutTitle)
-        .eq('order_id', state.selectedOrderId)
-        .order('start_date', { ascending: true }));
-    } else if (!error && state.supportsGanttEntryTitle === null) {
-      state.supportsGanttEntryTitle = true;
+      return fetchGanttEntries();
+    }
+
+    if (error && isMissingGanttColumnError(error, 'entry_code')) {
+      state.supportsGanttEntryCode = false;
+      return fetchGanttEntries();
+    }
+
+    if (!error) {
+      if (state.supportsGanttEntryTitle === null) state.supportsGanttEntryTitle = true;
+      if (state.supportsGanttEntryCode === null) state.supportsGanttEntryCode = true;
     }
 
     if (error) throw error;
@@ -387,9 +393,15 @@
 
     let { data: createdEntry, error } = await state.supabase.from('gantt_entries').insert(insertPayload).select('id').single();
 
-    if (error && isMissingGanttTitleColumnError(error)) {
+    if (error && isMissingGanttColumnError(error, 'title')) {
       state.supportsGanttEntryTitle = false;
       const { title: _ignored, ...fallbackPayload } = insertPayload;
+      ({ data: createdEntry, error } = await state.supabase.from('gantt_entries').insert(fallbackPayload).select('id').single());
+    }
+
+    if (error && isMissingGanttColumnError(error, 'entry_code')) {
+      state.supportsGanttEntryCode = false;
+      const { entry_code: _ignoredCode, ...fallbackPayload } = insertPayload;
       ({ data: createdEntry, error } = await state.supabase.from('gantt_entries').insert(fallbackPayload).select('id').single());
     }
 

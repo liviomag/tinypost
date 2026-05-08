@@ -21,41 +21,86 @@
         </div>
 
         <div id="auth-view" class="hidden">
-          <form id="auth-form" novalidate>
-            <label for="email" class="label">E-Mail</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              class="input"
-              autocomplete="email"
-              placeholder="name@beispiel.de"
-              required
-            />
+          <div id="login-screen">
+            <form id="auth-form" novalidate>
+              <label for="email" class="label">E-Mail</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                class="input"
+                autocomplete="email"
+                placeholder="name@beispiel.de"
+                required
+              />
 
-            <label for="password" class="label">Passwort</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              class="input"
-              autocomplete="current-password"
-              placeholder="Mindestens 6 Zeichen"
-              minlength="6"
-              required
-            />
+              <label for="password" class="label">Passwort</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                class="input"
+                autocomplete="current-password"
+                placeholder="Mindestens 6 Zeichen"
+                minlength="6"
+                required
+              />
 
-            <div class="button-row">
-              <button id="login-btn" type="submit" class="btn btn-primary">Login</button>
-              <button id="register-btn" type="button" class="btn">Registrieren</button>
+              <div class="button-row">
+                <button id="login-btn" type="submit" class="btn btn-primary">Login</button>
+                <button id="register-btn" type="button" class="btn">Registrieren</button>
+              </div>
+            </form>
+
+            <div class="divider" aria-hidden="true"></div>
+
+            <div class="magic-link-box">
+              <button id="forgot-password-btn" type="button" class="btn btn-ghost">Passwort vergessen</button>
             </div>
-          </form>
+          </div>
 
-          <div class="divider" aria-hidden="true"></div>
+          <div id="register-screen" class="hidden">
+            <form id="register-form" novalidate>
+              <label for="register-email" class="label">E-Mail</label>
+              <input
+                id="register-email"
+                name="register-email"
+                type="email"
+                class="input"
+                autocomplete="email"
+                placeholder="name@beispiel.de"
+                required
+              />
 
-          <div class="magic-link-box">
-            <p class="hint">Passwort vergessen oder ohne Passwort einloggen?</p>
-            <button id="magic-link-btn" type="button" class="btn btn-ghost">Magic Link senden</button>
+              <label for="register-password" class="label">Passwort</label>
+              <input
+                id="register-password"
+                name="register-password"
+                type="password"
+                class="input"
+                autocomplete="new-password"
+                placeholder="Mindestens 6 Zeichen"
+                minlength="6"
+                required
+              />
+
+              <label for="register-password-repeat" class="label">Passwort wiederholen</label>
+              <input
+                id="register-password-repeat"
+                name="register-password-repeat"
+                type="password"
+                class="input"
+                autocomplete="new-password"
+                placeholder="Passwort erneut eingeben"
+                minlength="6"
+                required
+              />
+
+              <div class="button-row">
+                <button id="register-submit-btn" type="submit" class="btn btn-primary">Registrieren</button>
+                <button id="back-to-login-btn" type="button" class="btn">Zurück zum Login</button>
+              </div>
+            </form>
           </div>
         </div>
 

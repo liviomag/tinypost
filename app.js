@@ -11,6 +11,7 @@
     selectedOrderName: null,
     ganttEntries: [],
     ganttPositions: [],
+    supportsGanttEntryTitle: null,
   };
 
   const dom = {
@@ -127,12 +128,31 @@
       renderGanttChart();
       return;
     }
-    const { data, error } = await state.supabase
+
+    const selectWithTitle = 'id,name,title,position_id,entry_code,calendar_week,calendar_year,start_date,end_date';
+    const selectWithoutTitle = 'id,name,position_id,entry_code,calendar_week,calendar_year,start_date,end_date';
+
+    let query = state.supabase
       .from('gantt_entries')
-      .select('id,name,title,position_id,entry_code,calendar_week,calendar_year,start_date,end_date')
+      .select(state.supportsGanttEntryTitle === false ? selectWithoutTitle : selectWithTitle)
       .eq('order_id', state.selectedOrderId)
       .order('start_date', { ascending: true });
+
+    let { data, error } = await query;
+
+    if (error && error.message?.includes('gantt_entries.title')) {
+      state.supportsGanttEntryTitle = false;
+      ({ data, error } = await state.supabase
+        .from('gantt_entries')
+        .select(selectWithoutTitle)
+        .eq('order_id', state.selectedOrderId)
+        .order('start_date', { ascending: true }));
+    } else if (!error && state.supportsGanttEntryTitle === null) {
+      state.supportsGanttEntryTitle = true;
+    }
+
     if (error) throw error;
+
     state.ganttEntries = (data ?? []).map((row) => ({
       id: row.id,
       name: row.name,
@@ -344,7 +364,7 @@
     if (!positionId) throw new Error('Bitte eine Position auswählen oder neu anlegen.');
 
     const entryCode = `GE-${weekInfo.year}-${String(weekInfo.week).padStart(2, '0')}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-    const { data: createdEntry, error } = await state.supabase.from('gantt_entries').insert({
+    const insertPayload = {
       order_id: state.selectedOrderId,
       user_id: state.currentUser.id,
       position_id: positionId,
@@ -355,7 +375,16 @@
       name,
       start_date: startDate,
       end_date: endDate,
-    }).select('id').single();
+    };
+
+    let { data: createdEntry, error } = await state.supabase.from('gantt_entries').insert(insertPayload).select('id').single();
+
+    if (error && error.message?.includes('gantt_entries.title')) {
+      state.supportsGanttEntryTitle = false;
+      const { title: _ignored, ...fallbackPayload } = insertPayload;
+      ({ data: createdEntry, error } = await state.supabase.from('gantt_entries').insert(fallbackPayload).select('id').single());
+    }
+
     if (error) throw error;
 
     const { error: eventError } = await state.supabase.from('gantt_position_events').insert({

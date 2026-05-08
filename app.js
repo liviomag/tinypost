@@ -37,6 +37,10 @@
     ganttEnd: document.getElementById('gantt-end'),
     ganttChart: document.getElementById('gantt-chart'),
     ganttEmpty: document.getElementById('gantt-empty'),
+    ganttModal: document.getElementById('gantt-modal'),
+    ganttOpenModalBtn: document.getElementById('gantt-open-modal-btn'),
+    ganttCloseModalBtn: document.getElementById('gantt-close-modal-btn'),
+    ganttCancelBtn: document.getElementById('gantt-cancel-btn'),
   };
 
   function setLoading(isLoading, text = 'Lade…') {
@@ -82,8 +86,18 @@
   function showDashboardView(user) {
     dom.authView.classList.add('hidden');
     dom.dashboardView.classList.remove('hidden');
+    dom.dashboardView.classList.add('dashboard-expanded');
     dom.userInfo.textContent = user?.email ? `Eingeloggt als ${user.email}` : '';
     renderGanttChart();
+  }
+
+  function openGanttModal() {
+    dom.ganttModal.classList.remove('hidden');
+  }
+
+  function closeGanttModal() {
+    dom.ganttModal.classList.add('hidden');
+    dom.ganttForm.reset();
   }
 
   function loadGanttEntries() {
@@ -428,6 +442,18 @@
       logout();
     });
 
+    dom.ganttOpenModalBtn.addEventListener('click', () => {
+      if (state.loading) return;
+      openGanttModal();
+    });
+
+    dom.ganttCloseModalBtn.addEventListener('click', closeGanttModal);
+    dom.ganttCancelBtn.addEventListener('click', closeGanttModal);
+
+    dom.ganttModal.addEventListener('click', (event) => {
+      if (event.target === dom.ganttModal) closeGanttModal();
+    });
+
     dom.ganttForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const name = dom.ganttName.value.trim();
@@ -445,7 +471,7 @@
       }
 
       addGanttEntry({ id: crypto.randomUUID(), name, startDate, endDate });
-      dom.ganttForm.reset();
+      closeGanttModal();
       showAlert('success', 'Gantt-Eintrag wurde lokal gespeichert.');
     });
   }

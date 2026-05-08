@@ -107,6 +107,35 @@
         <div id="dashboard-view" class="hidden">
           <h2 class="dashboard-title">Dashboard</h2>
           <p class="hint" id="user-info"></p>
+
+          <section class="gantt-section" aria-labelledby="gantt-heading">
+            <div class="gantt-header-row">
+              <h3 id="gantt-heading" class="gantt-title">Projekt-Timeline</h3>
+              <p class="gantt-subtitle">Lokales Gantt-Diagramm (nur im Browser gespeichert)</p>
+            </div>
+
+            <form id="gantt-form" class="gantt-form" novalidate>
+              <div class="gantt-form-grid">
+                <div>
+                  <label for="gantt-name" class="label">Name / Systemname</label>
+                  <input id="gantt-name" name="gantt-name" type="text" class="input" required />
+                </div>
+                <div>
+                  <label for="gantt-start" class="label">Startdatum</label>
+                  <input id="gantt-start" name="gantt-start" type="date" class="input" required />
+                </div>
+                <div>
+                  <label for="gantt-end" class="label">Enddatum</label>
+                  <input id="gantt-end" name="gantt-end" type="date" class="input" required />
+                </div>
+              </div>
+              <button id="gantt-save-btn" type="submit" class="btn btn-primary gantt-save-btn">Eintrag speichern</button>
+            </form>
+
+            <div id="gantt-empty" class="gantt-empty">Noch keine Gantt-Einträge vorhanden.</div>
+            <div id="gantt-chart" class="gantt-chart" aria-live="polite"></div>
+          </section>
+
           <button id="logout-btn" type="button" class="btn btn-primary">Logout</button>
         </div>
       </section>

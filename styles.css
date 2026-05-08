@@ -181,3 +181,30 @@ body {
     font-size: 1.35rem;
   }
 }
+
+.gantt-section {
+  margin: 18px 0 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fcfcfb;
+}
+.gantt-title { margin: 0; font-size: 1.08rem; }
+.gantt-subtitle { margin: 4px 0 0; color: var(--muted); font-size: .85rem; }
+.gantt-form-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr; gap: 10px; }
+.gantt-save-btn { margin-top: 4px; }
+.gantt-empty { color: var(--muted); font-size: .9rem; padding: 8px 2px; }
+.gantt-chart { overflow-x: auto; border-top: 1px solid var(--border); padding-top: 8px; }
+.gantt-grid { min-width: 980px; display: grid; grid-template-columns: 220px repeat(12, 1fr); align-items: center; }
+.gantt-header { margin-bottom: 8px; }
+.gantt-row { margin-bottom: 6px; }
+.gantt-row-label { font-size: .88rem; color: #323232; display:flex; align-items:center; justify-content:space-between; gap:8px; padding-right: 10px; }
+.gantt-week-cell, .gantt-week-slot { text-align: center; border-left: 1px solid #efefef; min-height: 36px; display:flex; align-items:center; justify-content:center; }
+.gantt-week-cell { font-size: .76rem; color: var(--muted); }
+.week-block-end { border-right: 2px solid #dfdfdf; }
+.gantt-bar { width: 100%; height: 24px; border-radius: 8px; background: #dbe8ff; color: #234; font-size: .72rem; display:flex; align-items:center; justify-content:flex-start; padding-left: 6px; white-space: nowrap; overflow: hidden; }
+.gantt-delete-btn { padding: 5px 8px; min-height: auto; font-size: .72rem; }
+
+@media (max-width: 840px) {
+  .gantt-form-grid { grid-template-columns: 1fr; }
+}

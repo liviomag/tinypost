@@ -1,10 +1,13 @@
 (() => {
   'use strict';
 
+  const GANTT_STORAGE_KEY = 'ganttEntries';
+
   const state = {
     supabase: null,
     loading: false,
     authScreen: 'login',
+    ganttEntries: [],
   };
 
   const dom = {
@@ -28,6 +31,12 @@
     forgotPasswordBtn: document.getElementById('forgot-password-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     userInfo: document.getElementById('user-info'),
+    ganttForm: document.getElementById('gantt-form'),
+    ganttName: document.getElementById('gantt-name'),
+    ganttStart: document.getElementById('gantt-start'),
+    ganttEnd: document.getElementById('gantt-end'),
+    ganttChart: document.getElementById('gantt-chart'),
+    ganttEmpty: document.getElementById('gantt-empty'),
   };
 
   function setLoading(isLoading, text = 'Lade…') {
@@ -74,6 +83,142 @@
     dom.authView.classList.add('hidden');
     dom.dashboardView.classList.remove('hidden');
     dom.userInfo.textContent = user?.email ? `Eingeloggt als ${user.email}` : '';
+    renderGanttChart();
+  }
+
+  function loadGanttEntries() {
+    try {
+      const raw = localStorage.getItem(GANTT_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_error) {
+      return [];
+    }
+  }
+
+  function saveGanttEntries() {
+    localStorage.setItem(GANTT_STORAGE_KEY, JSON.stringify(state.ganttEntries));
+  }
+
+  function getISOWeek(dateString) {
+    const date = new Date(`${dateString}T00:00:00`);
+    const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = utcDate.getUTCDay() || 7;
+    utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
+    const week = Math.ceil((((utcDate - yearStart) / 86400000) + 1) / 7);
+    return { year: utcDate.getUTCFullYear(), week };
+  }
+
+  function getStartOfISOWeek(date = new Date()) {
+    const d = new Date(date);
+    const day = d.getDay() || 7;
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - day + 1);
+    return d;
+  }
+
+  function generateCalendarWeeks(count = 12) {
+    const weeks = [];
+    const currentWeekStart = getStartOfISOWeek(new Date());
+    for (let i = 0; i < count; i += 1) {
+      const weekStart = new Date(currentWeekStart);
+      weekStart.setDate(currentWeekStart.getDate() + i * 7);
+      const { year, week } = getISOWeek(weekStart.toISOString().slice(0, 10));
+      weeks.push({ year, week, key: `${year}-KW${week}` });
+    }
+    return weeks;
+  }
+
+  function getWeekIndex(weeks, dateString) {
+    const target = getISOWeek(dateString);
+    return weeks.findIndex((w) => w.year === target.year && w.week === target.week);
+  }
+
+  function addGanttEntry(entry) {
+    state.ganttEntries.push(entry);
+    saveGanttEntries();
+    renderGanttChart();
+  }
+
+  function deleteGanttEntry(id) {
+    state.ganttEntries = state.ganttEntries.filter((entry) => entry.id !== id);
+    saveGanttEntries();
+    renderGanttChart();
+  }
+
+  function renderGanttChart() {
+    if (!dom.ganttChart || !dom.ganttEmpty) return;
+
+    const weeks = generateCalendarWeeks(12);
+    dom.ganttChart.innerHTML = '';
+
+    if (!state.ganttEntries.length) {
+      dom.ganttEmpty.classList.remove('hidden');
+      return;
+    }
+
+    dom.ganttEmpty.classList.add('hidden');
+
+    const header = document.createElement('div');
+    header.className = 'gantt-grid gantt-header';
+
+    const headLabel = document.createElement('div');
+    headLabel.className = 'gantt-row-label';
+    headLabel.textContent = 'Eintrag';
+    header.appendChild(headLabel);
+
+    weeks.forEach((week, idx) => {
+      const cell = document.createElement('div');
+      cell.className = 'gantt-week-cell';
+      if ((idx + 1) % 4 === 0) cell.classList.add('week-block-end');
+      cell.textContent = `KW ${week.week}`;
+      header.appendChild(cell);
+    });
+
+    dom.ganttChart.appendChild(header);
+
+    state.ganttEntries.forEach((entry) => {
+      const row = document.createElement('div');
+      row.className = 'gantt-grid gantt-row';
+
+      const label = document.createElement('div');
+      label.className = 'gantt-row-label';
+
+      const name = document.createElement('span');
+      name.textContent = entry.name;
+      label.appendChild(name);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'btn gantt-delete-btn';
+      deleteButton.textContent = 'Löschen';
+      deleteButton.addEventListener('click', () => deleteGanttEntry(entry.id));
+      label.appendChild(deleteButton);
+
+      row.appendChild(label);
+
+      const startIndex = getWeekIndex(weeks, entry.startDate);
+      const endIndex = getWeekIndex(weeks, entry.endDate);
+
+      weeks.forEach((_, idx) => {
+        const slot = document.createElement('div');
+        slot.className = 'gantt-week-slot';
+        if ((idx + 1) % 4 === 0) slot.classList.add('week-block-end');
+
+        if (startIndex !== -1 && endIndex !== -1 && idx >= startIndex && idx <= endIndex) {
+          const bar = document.createElement('div');
+          bar.className = 'gantt-bar';
+          if (idx === startIndex) bar.textContent = entry.name;
+          slot.appendChild(bar);
+        }
+
+        row.appendChild(slot);
+      });
+
+      dom.ganttChart.appendChild(row);
+    });
   }
 
   function getCredentialsFromConfig(configData) {
@@ -91,7 +236,7 @@
     let response;
     try {
       response = await fetch('./supabase-config.json', { cache: 'no-store' });
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Konfigurationsdatei konnte nicht geladen werden. Läuft die App über einen lokalen Webserver?');
     }
 
@@ -101,7 +246,7 @@
 
     try {
       return await response.json();
-    } catch (error) {
+    } catch (_error) {
       throw new Error('supabase-config.json enthält ungültiges JSON.');
     }
   }
@@ -282,8 +427,30 @@
       if (!state.supabase || state.loading) return;
       logout();
     });
+
+    dom.ganttForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = dom.ganttName.value.trim();
+      const startDate = dom.ganttStart.value;
+      const endDate = dom.ganttEnd.value;
+
+      if (!name || !startDate || !endDate) {
+        showAlert('error', 'Bitte Name, Startdatum und Enddatum für den Gantt-Eintrag ausfüllen.');
+        return;
+      }
+
+      if (startDate > endDate) {
+        showAlert('error', 'Das Enddatum darf nicht vor dem Startdatum liegen.');
+        return;
+      }
+
+      addGanttEntry({ id: crypto.randomUUID(), name, startDate, endDate });
+      dom.ganttForm.reset();
+      showAlert('success', 'Gantt-Eintrag wurde lokal gespeichert.');
+    });
   }
 
+  state.ganttEntries = loadGanttEntries();
   registerEventHandlers();
   initializeSupabase();
 })();

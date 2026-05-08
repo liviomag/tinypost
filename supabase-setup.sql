@@ -176,16 +176,13 @@ create table if not exists public.gantt_position_events (
 
 do $$
 begin
-  if not exists (
-    select 1
-    from pg_constraint
-    where conname = 'gantt_entries_position_fk'
-      and conrelid = 'public.gantt_entries'::regclass
-  ) then
+  begin
     alter table public.gantt_entries
       add constraint gantt_entries_position_fk
       foreign key (position_id) references public.gantt_positions(id) on delete set null;
-  end if;
+  exception
+    when duplicate_object then null;
+  end;
 end $$;
 
 drop trigger if exists on_gantt_positions_updated on public.gantt_positions;

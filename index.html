@@ -114,27 +114,37 @@
               <p class="gantt-subtitle">Lokales Gantt-Diagramm (nur im Browser gespeichert)</p>
             </div>
 
-            <form id="gantt-form" class="gantt-form" novalidate>
-              <div class="gantt-form-grid">
-                <div>
-                  <label for="gantt-name" class="label">Name / Systemname</label>
-                  <input id="gantt-name" name="gantt-name" type="text" class="input" required />
-                </div>
-                <div>
-                  <label for="gantt-start" class="label">Startdatum</label>
-                  <input id="gantt-start" name="gantt-start" type="date" class="input" required />
-                </div>
-                <div>
-                  <label for="gantt-end" class="label">Enddatum</label>
-                  <input id="gantt-end" name="gantt-end" type="date" class="input" required />
-                </div>
-              </div>
-              <button id="gantt-save-btn" type="submit" class="btn btn-primary gantt-save-btn">Eintrag speichern</button>
-            </form>
+            <div class="gantt-actions">
+              <button id="gantt-open-modal-btn" type="button" class="btn btn-primary">Eintrag erstellen</button>
+            </div>
 
             <div id="gantt-empty" class="gantt-empty">Noch keine Gantt-Einträge vorhanden.</div>
             <div id="gantt-chart" class="gantt-chart" aria-live="polite"></div>
           </section>
+
+          <div id="gantt-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="gantt-modal-heading">
+            <div class="modal-card">
+              <div class="modal-header">
+                <h3 id="gantt-modal-heading" class="modal-title">Neuen Timeline-Eintrag erstellen</h3>
+                <button id="gantt-close-modal-btn" type="button" class="btn modal-close-btn" aria-label="Popup schließen">Schließen</button>
+              </div>
+              <form id="gantt-form" class="gantt-form" novalidate>
+                <label for="gantt-name" class="label">Name / Systemname</label>
+                <input id="gantt-name" name="gantt-name" type="text" class="input" required />
+
+                <label for="gantt-start" class="label">Startdatum</label>
+                <input id="gantt-start" name="gantt-start" type="date" class="input" required />
+
+                <label for="gantt-end" class="label">Enddatum</label>
+                <input id="gantt-end" name="gantt-end" type="date" class="input" required />
+
+                <div class="button-row modal-actions">
+                  <button id="gantt-cancel-btn" type="button" class="btn">Abbrechen</button>
+                  <button id="gantt-save-btn" type="submit" class="btn btn-primary">Speichern</button>
+                </div>
+              </form>
+            </div>
+          </div>
 
           <button id="logout-btn" type="button" class="btn btn-primary">Logout</button>
         </div>

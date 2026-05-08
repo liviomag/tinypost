@@ -12,89 +12,38 @@
     <main class="app-shell">
       <section class="card" id="status-card" aria-live="polite">
         <h1 class="title">TinyPost Auth</h1>
-        <p class="subtitle">Einfaches Supabase-Login ohne Framework.</p>
+        <p id="breadcrumb" class="subtitle">Login</p>
 
         <div id="alert" class="alert hidden" role="status"></div>
 
-        <div id="loading" class="loading" aria-busy="true">
-          Initialisiere Supabase…
-        </div>
+        <div id="loading" class="loading" aria-busy="true">Initialisiere Supabase…</div>
 
         <div id="auth-view" class="hidden">
           <div id="login-screen">
             <form id="auth-form" novalidate>
               <label for="email" class="label">E-Mail</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                class="input"
-                autocomplete="email"
-                placeholder="name@beispiel.de"
-                required
-              />
+              <input id="email" name="email" type="email" class="input" autocomplete="email" required />
 
               <label for="password" class="label">Passwort</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                class="input"
-                autocomplete="current-password"
-                placeholder="Mindestens 6 Zeichen"
-                minlength="6"
-                required
-              />
+              <input id="password" name="password" type="password" class="input" autocomplete="current-password" minlength="6" required />
 
               <div class="button-row">
                 <button id="login-btn" type="submit" class="btn btn-primary">Login</button>
                 <button id="register-btn" type="button" class="btn">Registrieren</button>
               </div>
             </form>
-
-            <div class="divider" aria-hidden="true"></div>
-
-            <div class="magic-link-box">
-              <button id="forgot-password-btn" type="button" class="btn btn-ghost">Passwort vergessen</button>
-            </div>
           </div>
 
           <div id="register-screen" class="hidden">
             <form id="register-form" novalidate>
               <label for="register-email" class="label">E-Mail</label>
-              <input
-                id="register-email"
-                name="register-email"
-                type="email"
-                class="input"
-                autocomplete="email"
-                placeholder="name@beispiel.de"
-                required
-              />
+              <input id="register-email" name="register-email" type="email" class="input" autocomplete="email" required />
 
               <label for="register-password" class="label">Passwort</label>
-              <input
-                id="register-password"
-                name="register-password"
-                type="password"
-                class="input"
-                autocomplete="new-password"
-                placeholder="Mindestens 6 Zeichen"
-                minlength="6"
-                required
-              />
+              <input id="register-password" name="register-password" type="password" class="input" autocomplete="new-password" minlength="6" required />
 
               <label for="register-password-repeat" class="label">Passwort wiederholen</label>
-              <input
-                id="register-password-repeat"
-                name="register-password-repeat"
-                type="password"
-                class="input"
-                autocomplete="new-password"
-                placeholder="Passwort erneut eingeben"
-                minlength="6"
-                required
-              />
+              <input id="register-password-repeat" name="register-password-repeat" type="password" class="input" autocomplete="new-password" minlength="6" required />
 
               <div class="button-row">
                 <button id="register-submit-btn" type="submit" class="btn btn-primary">Registrieren</button>
@@ -105,77 +54,7 @@
         </div>
 
         <div id="dashboard-view" class="hidden">
-          <section id="orders-overview" class="orders-section" aria-labelledby="orders-heading">
-            <h3 id="orders-heading" class="gantt-title">Auftragsverwaltung</h3>
-            <form id="order-form" class="order-form" novalidate>
-              <label for="order-name" class="label">Neuer Auftrag</label>
-              <div class="button-row">
-                <input id="order-name" name="order-name" type="text" class="input" placeholder="z. B. Auftrag Alpha" required />
-                <button type="submit" class="btn btn-primary">Auftrag anlegen</button>
-              </div>
-            </form>
-            <div id="order-empty" class="gantt-empty">Noch keine Aufträge vorhanden.</div>
-            <div class="orders-table-wrap">
-              <table class="orders-table" aria-live="polite">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Angelegt am</th>
-                    <th>Angelegt von</th>
-                  </tr>
-                </thead>
-                <tbody id="order-list"></tbody>
-              </table>
-            </div>
-          </section>
-
-          <section id="timeline-detail" class="gantt-section hidden" aria-labelledby="gantt-heading">
-            <h3 id="gantt-heading" class="gantt-title">Projekt Timeline</h3>
-            <p id="selected-order-label" class="gantt-subtitle">Kein Auftrag ausgewählt</p>
-            <div class="gantt-actions">
-              <button id="back-to-orders-btn" type="button" class="btn">Zurück zur Auftragsverwaltung</button>
-              <button id="gantt-open-modal-btn" type="button" class="btn btn-primary">Eintrag erstellen</button>
-            </div>
-            <div id="gantt-empty" class="gantt-empty">Noch keine Gantt-Einträge vorhanden.</div>
-            <div id="gantt-chart" class="gantt-chart" aria-live="polite"></div>
-          </section>
-
-          <div id="gantt-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="gantt-modal-heading">
-            <div class="modal-card">
-              <div class="modal-header">
-                <h3 id="gantt-modal-heading" class="modal-title">Neuen Timeline-Eintrag erstellen</h3>
-                <button id="gantt-close-modal-btn" type="button" class="btn modal-close-btn" aria-label="Popup schließen">Schließen</button>
-              </div>
-              <form id="gantt-form" class="gantt-form" novalidate>
-                <label for="gantt-title" class="label">Titel</label>
-                <input id="gantt-title" name="gantt-title" type="text" class="input" required />
-
-                <label for="gantt-name" class="label">Name / Systemname</label>
-                <input id="gantt-name" name="gantt-name" type="text" class="input" required />
-
-                <label for="gantt-position-mode" class="label">Position</label>
-                <select id="gantt-position-mode" class="input">
-                  <option value="new">Neue Position anlegen</option>
-                  <option value="existing">Bestehende Position verwenden</option>
-                </select>
-
-                <label for="gantt-position-id" class="label">Bestehende Position-ID</label>
-                <select id="gantt-position-id" class="input"></select>
-
-                <label for="gantt-start" class="label">Startdatum</label>
-                <input id="gantt-start" name="gantt-start" type="date" class="input" required />
-
-                <label for="gantt-end" class="label">Enddatum</label>
-                <input id="gantt-end" name="gantt-end" type="date" class="input" required />
-
-                <div class="button-row modal-actions">
-                  <button id="gantt-cancel-btn" type="button" class="btn">Abbrechen</button>
-                  <button id="gantt-save-btn" type="submit" class="btn btn-primary">Speichern</button>
-                </div>
-              </form>
-            </div>
-          </div>
-
+          <h2>Dashboard</h2>
           <button id="logout-btn" type="button" class="btn btn-primary">Logout</button>
         </div>
       </section>

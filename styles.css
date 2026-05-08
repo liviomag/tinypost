@@ -241,3 +241,28 @@ body {
     width: 100%;
   }
 }
+
+
+.dashboard-fullscreen {
+  width: calc(100vw - 24px);
+  min-height: calc(100vh - 24px);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.dashboard-fullscreen .title,
+.dashboard-fullscreen .subtitle,
+.dashboard-fullscreen #logout-btn {
+  display: none;
+}
+
+.dashboard-expanded { width: 100%; }
+.gantt-section { height: 100%; margin: 0; }
+.gantt-chart { min-height: calc(100vh - 220px); }
+.gantt-grid { min-width: 1600px; display: grid; grid-template-columns: 240px repeat(12, minmax(98px,1fr)); align-items: stretch; }
+.gantt-week-cell, .gantt-week-slot { min-height: 52px; }
+.gantt-week-slot { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 4px; }
+.gantt-day-slot { background: #f1f1f1; border-radius: 4px; min-height: 40px; }
+.gantt-day-slot.active { background: #dbe8ff; }
+.gantt-day-slot.active.entry-start { border-left: 3px solid #5b84d7; }
+.gantt-day-slot.active.entry-end { border-right: 3px solid #5b84d7; }

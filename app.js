@@ -1,12 +1,13 @@
 (() => {
   'use strict';
 
-  const GANTT_STORAGE_KEY = 'ganttEntries';
-
   const state = {
     supabase: null,
     loading: false,
     authScreen: 'login',
+    currentUser: null,
+    orders: [],
+    selectedOrderId: null,
     ganttEntries: [],
   };
 
@@ -41,23 +42,17 @@
     ganttOpenModalBtn: document.getElementById('gantt-open-modal-btn'),
     ganttCloseModalBtn: document.getElementById('gantt-close-modal-btn'),
     ganttCancelBtn: document.getElementById('gantt-cancel-btn'),
+    orderList: document.getElementById('order-list'),
+    orderEmpty: document.getElementById('order-empty'),
+    orderForm: document.getElementById('order-form'),
+    orderName: document.getElementById('order-name'),
+    selectedOrderLabel: document.getElementById('selected-order-label'),
   };
 
   function setLoading(isLoading, text = 'Lade…') {
     state.loading = isLoading;
     dom.loading.textContent = text;
     dom.loading.classList.toggle('hidden', !isLoading);
-
-    [
-      dom.loginBtn,
-      dom.registerBtn,
-      dom.registerSubmitBtn,
-      dom.backToLoginBtn,
-      dom.forgotPasswordBtn,
-      dom.logoutBtn,
-    ].forEach((btn) => {
-      if (btn) btn.disabled = isLoading;
-    });
   }
 
   function showAlert(type, message) {
@@ -84,36 +79,75 @@
     setAuthScreen('login');
   }
 
-  function showDashboardView(_user) {
+  function showDashboardView(user) {
+    state.currentUser = user;
     dom.authView.classList.add('hidden');
     dom.dashboardView.classList.remove('hidden');
     dom.dashboardView.classList.add('dashboard-expanded');
     dom.statusCard.classList.add('dashboard-fullscreen');
+  }
+
+  function openGanttModal() { dom.ganttModal.classList.remove('hidden'); }
+  function closeGanttModal() { dom.ganttModal.classList.add('hidden'); dom.ganttForm.reset(); }
+
+  async function fetchOrders() {
+    const { data, error } = await state.supabase
+      .from('orders')
+      .select('id,name,created_at')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    state.orders = data ?? [];
+    if (!state.selectedOrderId || !state.orders.find((o) => o.id === state.selectedOrderId)) {
+      state.selectedOrderId = state.orders[0]?.id ?? null;
+    }
+    renderOrderList();
+  }
+
+  async function fetchGanttEntries() {
+    if (!state.selectedOrderId) {
+      state.ganttEntries = [];
+      renderGanttChart();
+      return;
+    }
+    const { data, error } = await state.supabase
+      .from('gantt_entries')
+      .select('id,name,start_date,end_date')
+      .eq('order_id', state.selectedOrderId)
+      .order('start_date', { ascending: true });
+    if (error) throw error;
+    state.ganttEntries = (data ?? []).map((row) => ({
+      id: row.id,
+      name: row.name,
+      startDate: row.start_date,
+      endDate: row.end_date,
+    }));
     renderGanttChart();
   }
 
-  function openGanttModal() {
-    dom.ganttModal.classList.remove('hidden');
-  }
-
-  function closeGanttModal() {
-    dom.ganttModal.classList.add('hidden');
-    dom.ganttForm.reset();
-  }
-
-  function loadGanttEntries() {
-    try {
-      const raw = localStorage.getItem(GANTT_STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (_error) {
-      return [];
+  function renderOrderList() {
+    dom.orderList.innerHTML = '';
+    if (!state.orders.length) {
+      dom.orderEmpty.classList.remove('hidden');
+      dom.selectedOrderLabel.textContent = 'Kein Auftrag ausgewählt';
+      return;
     }
-  }
+    dom.orderEmpty.classList.add('hidden');
 
-  function saveGanttEntries() {
-    localStorage.setItem(GANTT_STORAGE_KEY, JSON.stringify(state.ganttEntries));
+    state.orders.forEach((order) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `btn order-item ${order.id === state.selectedOrderId ? 'order-item-active' : ''}`;
+      button.textContent = order.name;
+      button.addEventListener('click', async () => {
+        state.selectedOrderId = order.id;
+        renderOrderList();
+        await fetchGanttEntries();
+      });
+      dom.orderList.appendChild(button);
+    });
+
+    const selected = state.orders.find((order) => order.id === state.selectedOrderId);
+    dom.selectedOrderLabel.textContent = selected ? `Auftrag: ${selected.name}` : 'Kein Auftrag ausgewählt';
   }
 
   function getISOWeek(dateString) {
@@ -141,354 +175,174 @@
       const weekStart = new Date(currentWeekStart);
       weekStart.setDate(currentWeekStart.getDate() + i * 7);
       const { year, week } = getISOWeek(weekStart.toISOString().slice(0, 10));
-      weeks.push({ year, week, key: `${year}-KW${week}` });
+      weeks.push({ year, week });
     }
     return weeks;
   }
 
-  function getWeekIndex(weeks, dateString) {
-    const target = getISOWeek(dateString);
-    return weeks.findIndex((w) => w.year === target.year && w.week === target.week);
-  }
-
-  function addGanttEntry(entry) {
-    state.ganttEntries.push(entry);
-    saveGanttEntries();
-    renderGanttChart();
-  }
-
-  function deleteGanttEntry(id) {
-    state.ganttEntries = state.ganttEntries.filter((entry) => entry.id !== id);
-    saveGanttEntries();
-    renderGanttChart();
-  }
-
   function renderGanttChart() {
-    if (!dom.ganttChart || !dom.ganttEmpty) return;
-
     const weeks = generateCalendarWeeks(12);
     dom.ganttChart.innerHTML = '';
 
-    if (!state.ganttEntries.length) {
+    if (!state.selectedOrderId || !state.ganttEntries.length) {
       dom.ganttEmpty.classList.remove('hidden');
       return;
     }
-
     dom.ganttEmpty.classList.add('hidden');
 
     const header = document.createElement('div');
     header.className = 'gantt-grid gantt-header';
-
     const headLabel = document.createElement('div');
     headLabel.className = 'gantt-row-label';
     headLabel.textContent = 'Eintrag';
     header.appendChild(headLabel);
-
     weeks.forEach((week) => {
       const cell = document.createElement('div');
       cell.className = 'gantt-week-cell';
       cell.textContent = `KW ${week.week}`;
       header.appendChild(cell);
     });
-
     dom.ganttChart.appendChild(header);
 
     state.ganttEntries.forEach((entry) => {
       const row = document.createElement('div');
       row.className = 'gantt-grid gantt-row';
-
       const label = document.createElement('div');
       label.className = 'gantt-row-label';
-
       const name = document.createElement('span');
       name.textContent = entry.name;
       label.appendChild(name);
-
       const deleteButton = document.createElement('button');
       deleteButton.type = 'button';
       deleteButton.className = 'btn gantt-delete-btn';
       deleteButton.textContent = 'Löschen';
       deleteButton.addEventListener('click', () => deleteGanttEntry(entry.id));
       label.appendChild(deleteButton);
-
       row.appendChild(label);
 
       const start = new Date(`${entry.startDate}T00:00:00`);
       const end = new Date(`${entry.endDate}T23:59:59`);
-
       weeks.forEach((week) => {
         const slot = document.createElement('div');
         slot.className = 'gantt-week-slot';
-
         const weekStart = getStartOfISOWeek(new Date(Date.UTC(week.year, 0, 4 + (week.week - 1) * 7)));
         const monday = new Date(Date.UTC(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate()));
-
         for (let dayIdx = 0; dayIdx < 7; dayIdx += 1) {
           const dayCell = document.createElement('div');
           dayCell.className = 'gantt-day-slot';
           const dayDate = new Date(monday);
           dayDate.setUTCDate(monday.getUTCDate() + dayIdx);
           const localDay = new Date(dayDate.getUTCFullYear(), dayDate.getUTCMonth(), dayDate.getUTCDate());
-
-          if (localDay >= start && localDay <= end) {
-            dayCell.classList.add('active');
-            if (localDay.toDateString() === start.toDateString()) dayCell.classList.add('entry-start');
-            if (localDay.toDateString() === end.toDateString()) dayCell.classList.add('entry-end');
-            if (dayIdx === 0) dayCell.classList.add('week-start');
-          }
-
+          if (localDay >= start && localDay <= end) dayCell.classList.add('active');
           slot.appendChild(dayCell);
         }
-
         row.appendChild(slot);
       });
-
       dom.ganttChart.appendChild(row);
     });
+  }
+
+  async function createOrder(name) {
+    const { error } = await state.supabase.from('orders').insert({ name, user_id: state.currentUser.id });
+    if (error) throw error;
+    await fetchOrders();
+    await fetchGanttEntries();
+  }
+
+  async function createGanttEntry(name, startDate, endDate) {
+    const { error } = await state.supabase.from('gantt_entries').insert({
+      order_id: state.selectedOrderId,
+      user_id: state.currentUser.id,
+      name,
+      start_date: startDate,
+      end_date: endDate,
+    });
+    if (error) throw error;
+    await fetchGanttEntries();
+  }
+
+  async function deleteGanttEntry(id) {
+    const { error } = await state.supabase.from('gantt_entries').delete().eq('id', id);
+    if (error) {
+      showAlert('error', `Löschen fehlgeschlagen: ${error.message}`);
+      return;
+    }
+    await fetchGanttEntries();
   }
 
   function getCredentialsFromConfig(configData) {
     const url = configData?.SUPABASE_URL;
     const anonKey = configData?.SUPABASE_ANON_KEY;
-
-    if (!url || !anonKey) {
-      throw new Error('SUPABASE_URL oder SUPABASE_ANON_KEY fehlt in supabase-config.json.');
-    }
-
+    if (!url || !anonKey) throw new Error('SUPABASE_URL oder SUPABASE_ANON_KEY fehlt in supabase-config.json.');
     return { url, anonKey };
   }
 
-  async function loadConfig() {
-    let response;
-    try {
-      response = await fetch('./supabase-config.json', { cache: 'no-store' });
-    } catch (_error) {
-      throw new Error('Konfigurationsdatei konnte nicht geladen werden. Läuft die App über einen lokalen Webserver?');
-    }
-
-    if (!response.ok) {
-      throw new Error(`supabase-config.json nicht gefunden (HTTP ${response.status}).`);
-    }
-
-    try {
-      return await response.json();
-    } catch (_error) {
-      throw new Error('supabase-config.json enthält ungültiges JSON.');
-    }
-  }
+  async function loadConfig() { const response = await fetch('./supabase-config.json', { cache: 'no-store' }); return response.json(); }
 
   async function initializeSupabase() {
     setLoading(true, 'Initialisiere Supabase…');
-    hideAlert();
-
     try {
       const config = await loadConfig();
       const { url, anonKey } = getCredentialsFromConfig(config);
-
-      if (!window.supabase || !window.supabase.createClient) {
-        throw new Error('Supabase Library wurde nicht geladen. Prüfe die CDN-Einbindung in index.html.');
-      }
-
       state.supabase = window.supabase.createClient(url, anonKey);
-
-      const { data, error } = await state.supabase.auth.getSession();
-      if (error) throw error;
-
+      const { data } = await state.supabase.auth.getSession();
       if (data.session?.user) {
         showDashboardView(data.session.user);
-      } else {
-        showAuthView();
-      }
-
-      state.supabase.auth.onAuthStateChange((_event, session) => {
+        await fetchOrders();
+        await fetchGanttEntries();
+      } else showAuthView();
+      state.supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
           showDashboardView(session.user);
-        } else {
-          showAuthView();
-        }
+          await fetchOrders();
+          await fetchGanttEntries();
+        } else showAuthView();
       });
     } catch (error) {
       showAuthView();
       showAlert('error', `Initialisierung fehlgeschlagen: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
-  function getLoginValues() {
-    return {
-      email: dom.email.value.trim(),
-      password: dom.password.value,
-    };
-  }
-
-  function getRegisterValues() {
-    return {
-      email: dom.registerEmail.value.trim(),
-      password: dom.registerPassword.value,
-      passwordRepeat: dom.registerPasswordRepeat.value,
-    };
-  }
-
-  async function login() {
-    const { email, password } = getLoginValues();
-    hideAlert();
-
-    if (!email || !password) {
-      showAlert('error', 'Bitte E-Mail und Passwort eingeben.');
-      return;
-    }
-
-    setLoading(true, 'Login läuft…');
-    const { error } = await state.supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-
-    if (error) {
-      showAlert('error', `Login fehlgeschlagen: ${error.message}`);
-      return;
-    }
-
-    showAlert('success', 'Login erfolgreich.');
-  }
-
-  async function register() {
-    const { email, password, passwordRepeat } = getRegisterValues();
-    hideAlert();
-
-    if (!email || !password || !passwordRepeat) {
-      showAlert('error', 'Bitte E-Mail, Passwort und Passwort wiederholen ausfüllen.');
-      return;
-    }
-
-    if (password !== passwordRepeat) {
-      showAlert('error', 'Die eingegebenen Passwörter stimmen nicht überein.');
-      return;
-    }
-
-    setLoading(true, 'Registrierung läuft…');
-    const { error } = await state.supabase.auth.signUp({ email, password });
-    setLoading(false);
-
-    if (error) {
-      showAlert('error', `Registrierung fehlgeschlagen: ${error.message}`);
-      return;
-    }
-
-    showAlert('success', 'Registrierung gestartet. Prüfe dein Postfach für die Bestätigung.');
-  }
-
-  async function sendPasswordReset() {
-    const email = dom.email.value.trim();
-    hideAlert();
-
-    if (!email) {
-      showAlert('error', 'Bitte zuerst eine E-Mail-Adresse eingeben.');
-      return;
-    }
-
-    setLoading(true, 'Passwort vergessen wird vorbereitet…');
-    const { error } = await state.supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin + window.location.pathname,
-      },
-    });
-    setLoading(false);
-
-    if (error) {
-      showAlert('error', `Passwort vergessen konnte nicht gestartet werden: ${error.message}`);
-      return;
-    }
-
-    showAlert('success', 'E-Mail zum Zurücksetzen wurde gesendet. Prüfe dein E-Mail-Postfach.');
-  }
-
-  async function logout() {
-    hideAlert();
-    setLoading(true, 'Logout läuft…');
-    const { error } = await state.supabase.auth.signOut();
-    setLoading(false);
-
-    if (error) {
-      showAlert('error', `Logout fehlgeschlagen: ${error.message}`);
-      return;
-    }
-
-    showAlert('success', 'Du wurdest ausgeloggt.');
-  }
+  async function login() { const { email, password } = { email: dom.email.value.trim(), password: dom.password.value }; const { error } = await state.supabase.auth.signInWithPassword({ email, password }); if (error) showAlert('error', error.message); }
+  async function register() { const email = dom.registerEmail.value.trim(); const password = dom.registerPassword.value; const passwordRepeat = dom.registerPasswordRepeat.value; if (password !== passwordRepeat) return showAlert('error', 'Die eingegebenen Passwörter stimmen nicht überein.'); const { error } = await state.supabase.auth.signUp({ email, password }); if (error) showAlert('error', error.message); else showAlert('success', 'Registrierung gestartet.'); }
+  async function logout() { await state.supabase.auth.signOut(); }
 
   function registerEventHandlers() {
-    dom.authForm.addEventListener('submit', (event) => {
+    dom.authForm.addEventListener('submit', (e) => { e.preventDefault(); login(); });
+    dom.registerBtn.addEventListener('click', () => setAuthScreen('register'));
+    dom.registerForm.addEventListener('submit', (e) => { e.preventDefault(); register(); });
+    dom.backToLoginBtn.addEventListener('click', () => setAuthScreen('login'));
+    dom.logoutBtn.addEventListener('click', logout);
+
+    dom.orderForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (!state.supabase || state.loading) return;
-      login();
-    });
-
-    dom.registerBtn.addEventListener('click', () => {
-      if (state.loading) return;
-      hideAlert();
-      setAuthScreen('register');
-      dom.registerEmail.value = dom.email.value.trim();
-    });
-
-    dom.registerForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      if (!state.supabase || state.loading) return;
-      register();
-    });
-
-    dom.backToLoginBtn.addEventListener('click', () => {
-      if (state.loading) return;
-      hideAlert();
-      setAuthScreen('login');
-      dom.email.value = dom.registerEmail.value.trim();
-    });
-
-    dom.forgotPasswordBtn.addEventListener('click', () => {
-      if (!state.supabase || state.loading) return;
-      sendPasswordReset();
-    });
-
-    dom.logoutBtn.addEventListener('click', () => {
-      if (!state.supabase || state.loading) return;
-      logout();
+      const name = dom.orderName.value.trim();
+      if (!name) return;
+      await createOrder(name);
+      dom.orderForm.reset();
+      showAlert('success', 'Auftrag erstellt.');
     });
 
     dom.ganttOpenModalBtn.addEventListener('click', () => {
-      if (state.loading) return;
+      if (!state.selectedOrderId) return showAlert('error', 'Bitte zuerst einen Auftrag erstellen/auswählen.');
       openGanttModal();
     });
-
     dom.ganttCloseModalBtn.addEventListener('click', closeGanttModal);
     dom.ganttCancelBtn.addEventListener('click', closeGanttModal);
-
-    dom.ganttModal.addEventListener('click', (event) => {
-      if (event.target === dom.ganttModal) closeGanttModal();
-    });
-
-    dom.ganttForm.addEventListener('submit', (event) => {
+    dom.ganttForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const name = dom.ganttName.value.trim();
       const startDate = dom.ganttStart.value;
       const endDate = dom.ganttEnd.value;
-
-      if (!name || !startDate || !endDate) {
-        showAlert('error', 'Bitte Name, Startdatum und Enddatum für den Gantt-Eintrag ausfüllen.');
-        return;
-      }
-
-      if (startDate > endDate) {
-        showAlert('error', 'Das Enddatum darf nicht vor dem Startdatum liegen.');
-        return;
-      }
-
-      addGanttEntry({ id: crypto.randomUUID(), name, startDate, endDate });
+      if (!name || !startDate || !endDate) return showAlert('error', 'Bitte alle Felder ausfüllen.');
+      if (startDate > endDate) return showAlert('error', 'Enddatum darf nicht vor Startdatum liegen.');
+      await createGanttEntry(name, startDate, endDate);
       closeGanttModal();
-      showAlert('success', 'Gantt-Eintrag wurde lokal gespeichert.');
+      showAlert('success', 'Gantt-Eintrag gespeichert.');
     });
   }
 
-  state.ganttEntries = loadGanttEntries();
   registerEventHandlers();
   initializeSupabase();
 })();

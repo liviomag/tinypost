@@ -4,19 +4,28 @@
   const state = {
     supabase: null,
     loading: false,
+    authScreen: 'login',
   };
 
   const dom = {
     loading: document.getElementById('loading'),
     alert: document.getElementById('alert'),
     authView: document.getElementById('auth-view'),
+    loginScreen: document.getElementById('login-screen'),
+    registerScreen: document.getElementById('register-screen'),
     dashboardView: document.getElementById('dashboard-view'),
     authForm: document.getElementById('auth-form'),
+    registerForm: document.getElementById('register-form'),
     email: document.getElementById('email'),
     password: document.getElementById('password'),
+    registerEmail: document.getElementById('register-email'),
+    registerPassword: document.getElementById('register-password'),
+    registerPasswordRepeat: document.getElementById('register-password-repeat'),
     loginBtn: document.getElementById('login-btn'),
     registerBtn: document.getElementById('register-btn'),
-    magicLinkBtn: document.getElementById('magic-link-btn'),
+    registerSubmitBtn: document.getElementById('register-submit-btn'),
+    backToLoginBtn: document.getElementById('back-to-login-btn'),
+    forgotPasswordBtn: document.getElementById('forgot-password-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     userInfo: document.getElementById('user-info'),
   };
@@ -26,7 +35,14 @@
     dom.loading.textContent = text;
     dom.loading.classList.toggle('hidden', !isLoading);
 
-    [dom.loginBtn, dom.registerBtn, dom.magicLinkBtn, dom.logoutBtn].forEach((btn) => {
+    [
+      dom.loginBtn,
+      dom.registerBtn,
+      dom.registerSubmitBtn,
+      dom.backToLoginBtn,
+      dom.forgotPasswordBtn,
+      dom.logoutBtn,
+    ].forEach((btn) => {
       if (btn) btn.disabled = isLoading;
     });
   }
@@ -42,9 +58,16 @@
     dom.alert.textContent = '';
   }
 
+  function setAuthScreen(screen) {
+    state.authScreen = screen;
+    dom.loginScreen.classList.toggle('hidden', screen !== 'login');
+    dom.registerScreen.classList.toggle('hidden', screen !== 'register');
+  }
+
   function showAuthView() {
     dom.authView.classList.remove('hidden');
     dom.dashboardView.classList.add('hidden');
+    setAuthScreen('login');
   }
 
   function showDashboardView(user) {
@@ -121,15 +144,23 @@
     }
   }
 
-  function getFormValues() {
+  function getLoginValues() {
     return {
       email: dom.email.value.trim(),
       password: dom.password.value,
     };
   }
 
+  function getRegisterValues() {
+    return {
+      email: dom.registerEmail.value.trim(),
+      password: dom.registerPassword.value,
+      passwordRepeat: dom.registerPasswordRepeat.value,
+    };
+  }
+
   async function login() {
-    const { email, password } = getFormValues();
+    const { email, password } = getLoginValues();
     hideAlert();
 
     if (!email || !password) {
@@ -150,11 +181,16 @@
   }
 
   async function register() {
-    const { email, password } = getFormValues();
+    const { email, password, passwordRepeat } = getRegisterValues();
     hideAlert();
 
-    if (!email || !password) {
-      showAlert('error', 'Bitte E-Mail und Passwort für die Registrierung eingeben.');
+    if (!email || !password || !passwordRepeat) {
+      showAlert('error', 'Bitte E-Mail, Passwort und Passwort wiederholen ausfüllen.');
+      return;
+    }
+
+    if (password !== passwordRepeat) {
+      showAlert('error', 'Die eingegebenen Passwörter stimmen nicht überein.');
       return;
     }
 
@@ -170,7 +206,7 @@
     showAlert('success', 'Registrierung gestartet. Prüfe dein Postfach für die Bestätigung.');
   }
 
-  async function sendMagicLink() {
+  async function sendPasswordReset() {
     const email = dom.email.value.trim();
     hideAlert();
 
@@ -179,7 +215,7 @@
       return;
     }
 
-    setLoading(true, 'Sende Magic Link…');
+    setLoading(true, 'Passwort vergessen wird vorbereitet…');
     const { error } = await state.supabase.auth.signInWithOtp({
       email,
       options: {
@@ -189,11 +225,11 @@
     setLoading(false);
 
     if (error) {
-      showAlert('error', `Magic Link konnte nicht gesendet werden: ${error.message}`);
+      showAlert('error', `Passwort vergessen konnte nicht gestartet werden: ${error.message}`);
       return;
     }
 
-    showAlert('success', 'Magic Link wurde gesendet. Prüfe dein E-Mail-Postfach.');
+    showAlert('success', 'E-Mail zum Zurücksetzen wurde gesendet. Prüfe dein E-Mail-Postfach.');
   }
 
   async function logout() {
@@ -218,13 +254,28 @@
     });
 
     dom.registerBtn.addEventListener('click', () => {
+      if (state.loading) return;
+      hideAlert();
+      setAuthScreen('register');
+      dom.registerEmail.value = dom.email.value.trim();
+    });
+
+    dom.registerForm.addEventListener('submit', (event) => {
+      event.preventDefault();
       if (!state.supabase || state.loading) return;
       register();
     });
 
-    dom.magicLinkBtn.addEventListener('click', () => {
+    dom.backToLoginBtn.addEventListener('click', () => {
+      if (state.loading) return;
+      hideAlert();
+      setAuthScreen('login');
+      dom.email.value = dom.registerEmail.value.trim();
+    });
+
+    dom.forgotPasswordBtn.addEventListener('click', () => {
       if (!state.supabase || state.loading) return;
-      sendMagicLink();
+      sendPasswordReset();
     });
 
     dom.logoutBtn.addEventListener('click', () => {

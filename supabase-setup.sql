@@ -108,6 +108,11 @@ create table if not exists public.gantt_entries (
   id uuid primary key default gen_random_uuid(),
   order_id uuid not null references public.orders(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
+  position_id uuid,
+  entry_code text,
+  calendar_week integer,
+  calendar_year integer,
+  title text,
   name text not null,
   start_date date not null,
   end_date date not null,
@@ -149,3 +154,66 @@ with check (auth.uid() = user_id);
 
 create index if not exists orders_user_id_created_idx on public.orders (user_id, created_at desc);
 create index if not exists gantt_entries_order_id_start_idx on public.gantt_entries (order_id, start_date);
+
+-- 8) Position tracking tables for repeatable/movable timeline entries
+create table if not exists public.gantt_positions (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.gantt_position_events (
+  id uuid primary key default gen_random_uuid(),
+  position_id uuid not null references public.gantt_positions(id) on delete cascade,
+  gantt_entry_id uuid not null references public.gantt_entries(id) on delete cascade,
+  event_type text not null default 'created',
+  event_note text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.gantt_entries
+  add constraint if not exists gantt_entries_position_fk
+  foreign key (position_id) references public.gantt_positions(id) on delete set null;
+
+drop trigger if exists on_gantt_positions_updated on public.gantt_positions;
+create trigger on_gantt_positions_updated
+before update on public.gantt_positions
+for each row
+execute function public.handle_updated_at();
+
+alter table public.gantt_positions enable row level security;
+alter table public.gantt_position_events enable row level security;
+
+drop policy if exists "Users can manage own gantt positions" on public.gantt_positions;
+create policy "Users can manage own gantt positions"
+on public.gantt_positions
+for all
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "Users can manage own gantt position events" on public.gantt_position_events;
+create policy "Users can manage own gantt position events"
+on public.gantt_position_events
+for all
+to authenticated
+using (
+  exists (
+    select 1 from public.gantt_positions p
+    where p.id = gantt_position_events.position_id
+      and p.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1 from public.gantt_positions p
+    where p.id = gantt_position_events.position_id
+      and p.user_id = auth.uid()
+  )
+);
+
+create index if not exists gantt_positions_order_idx on public.gantt_positions (order_id, created_at desc);
+create index if not exists gantt_events_position_idx on public.gantt_position_events (position_id, created_at desc);

@@ -266,3 +266,15 @@ body {
 .gantt-day-slot.active { background: #dbe8ff; }
 .gantt-day-slot.active.entry-start { border-left: 3px solid #5b84d7; }
 .gantt-day-slot.active.entry-end { border-right: 3px solid #5b84d7; }
+
+.orders-section {
+  margin: 0 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fcfcfb;
+}
+.order-form .input { margin-bottom: 0; }
+.order-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.order-item { min-height: auto; padding: 8px 10px; }
+.order-item-active { background: #111; color: #fff; border-color: #111; }

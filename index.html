@@ -105,13 +105,25 @@
         </div>
 
         <div id="dashboard-view" class="hidden">
+          <section class="orders-section" aria-labelledby="orders-heading">
+            <h3 id="orders-heading" class="gantt-title">Auftragsverwaltung</h3>
+            <form id="order-form" class="order-form" novalidate>
+              <label for="order-name" class="label">Neuer Auftrag</label>
+              <div class="button-row">
+                <input id="order-name" name="order-name" type="text" class="input" placeholder="z. B. Auftrag Alpha" required />
+                <button type="submit" class="btn btn-primary">Auftrag anlegen</button>
+              </div>
+            </form>
+            <div id="order-empty" class="gantt-empty">Noch keine Aufträge vorhanden.</div>
+            <div id="order-list" class="order-list"></div>
+          </section>
+
           <section class="gantt-section" aria-labelledby="gantt-heading">
             <h3 id="gantt-heading" class="gantt-title">Projekt Timeline</h3>
-
+            <p id="selected-order-label" class="gantt-subtitle">Kein Auftrag ausgewählt</p>
             <div class="gantt-actions">
               <button id="gantt-open-modal-btn" type="button" class="btn btn-primary">Eintrag erstellen</button>
             </div>
-
             <div id="gantt-empty" class="gantt-empty">Noch keine Gantt-Einträge vorhanden.</div>
             <div id="gantt-chart" class="gantt-chart" aria-live="polite"></div>
           </section>

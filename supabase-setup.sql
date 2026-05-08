@@ -94,3 +94,58 @@ using (auth.uid() = id);
 
 -- 6) Helpful index
 create index if not exists profiles_created_at_idx on public.profiles (created_at desc);
+
+-- 7) Orders and Gantt entries
+create table if not exists public.orders (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.gantt_entries (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  start_date date not null,
+  end_date date not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint gantt_date_check check (end_date >= start_date)
+);
+
+drop trigger if exists on_orders_updated on public.orders;
+create trigger on_orders_updated
+before update on public.orders
+for each row
+execute function public.handle_updated_at();
+
+drop trigger if exists on_gantt_entries_updated on public.gantt_entries;
+create trigger on_gantt_entries_updated
+before update on public.gantt_entries
+for each row
+execute function public.handle_updated_at();
+
+alter table public.orders enable row level security;
+alter table public.gantt_entries enable row level security;
+
+drop policy if exists "Users can manage own orders" on public.orders;
+create policy "Users can manage own orders"
+on public.orders
+for all
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "Users can manage own gantt entries" on public.gantt_entries;
+create policy "Users can manage own gantt entries"
+on public.gantt_entries
+for all
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create index if not exists orders_user_id_created_idx on public.orders (user_id, created_at desc);
+create index if not exists gantt_entries_order_id_start_idx on public.gantt_entries (order_id, start_date);

@@ -53,7 +53,8 @@ h3,
 
 h1 {
   font-size: clamp(2.1rem, 4.6vw, 4rem);
-  max-width: 16ch;
+  max-width: none;
+  white-space: nowrap;
   margin-bottom: 1rem;
 }
 
@@ -294,6 +295,10 @@ input:focus-visible {
 }
 
 @media (max-width: 820px) {
+  h1 {
+    white-space: normal;
+  }
+
   .offer-grid {
     grid-template-columns: 1fr;
   }
@@ -332,7 +337,7 @@ h1 span {
 .offer-card:first-child .offer-card__icon { border-color: rgba(255,255,255,0.2); }
 
 .offer-card:last-child {
-  background: #fff;
+  background: var(--bg);
   border-color: var(--accent);
 }
 

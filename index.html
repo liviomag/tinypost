@@ -3,61 +3,141 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TinyPost Auth</title>
+    <title>RoomAI – Immobilienbilder in Sekunden möblieren</title>
+    <meta
+      name="description"
+      content="Virtuelles Home Staging, realistische Renderings und Bildbearbeitung – per Software oder als Service."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js" defer></script>
   </head>
   <body>
-    <main class="app-shell">
-      <section class="card" id="status-card" aria-live="polite">
-        <h1 class="title">TinyPost Auth</h1>
-        <p id="breadcrumb" class="subtitle">Login</p>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="#" class="logo" aria-label="RoomAI Startseite">RoomAI</a>
+        <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav">☰</button>
+        <nav id="main-nav" class="main-nav" aria-label="Hauptnavigation">
+          <a href="#funktionen">Funktionen</a>
+          <a href="#beispiele">Beispiele</a>
+          <a href="#preise">Preise</a>
+          <a href="#kontakt">Kontakt</a>
+          <a href="#" class="btn btn-primary nav-cta">Kostenlos testen</a>
+        </nav>
+      </div>
+    </header>
 
-        <div id="alert" class="alert hidden" role="status"></div>
-
-        <div id="loading" class="loading" aria-busy="true">Initialisiere Supabase…</div>
-
-        <div id="auth-view" class="hidden">
-          <div id="login-screen">
-            <form id="auth-form" novalidate>
-              <label for="email" class="label">E-Mail</label>
-              <input id="email" name="email" type="email" class="input" autocomplete="email" required />
-
-              <label for="password" class="label">Passwort</label>
-              <input id="password" name="password" type="password" class="input" autocomplete="current-password" minlength="6" required />
-
-              <div class="button-row">
-                <button id="login-btn" type="submit" class="btn btn-primary">Login</button>
-                <button id="register-btn" type="button" class="btn">Registrieren</button>
-              </div>
-            </form>
-          </div>
-
-          <div id="register-screen" class="hidden">
-            <form id="register-form" novalidate>
-              <label for="register-email" class="label">E-Mail</label>
-              <input id="register-email" name="register-email" type="email" class="input" autocomplete="email" required />
-
-              <label for="register-password" class="label">Passwort</label>
-              <input id="register-password" name="register-password" type="password" class="input" autocomplete="new-password" minlength="6" required />
-
-              <label for="register-password-repeat" class="label">Passwort wiederholen</label>
-              <input id="register-password-repeat" name="register-password-repeat" type="password" class="input" autocomplete="new-password" minlength="6" required />
-
-              <div class="button-row">
-                <button id="register-submit-btn" type="submit" class="btn btn-primary">Registrieren</button>
-                <button id="back-to-login-btn" type="button" class="btn">Zurück zum Login</button>
-              </div>
-            </form>
-          </div>
+    <main>
+      <section class="hero container">
+        <p class="eyebrow">Für Immobilienprofis</p>
+        <h1>Immobilienbilder in Sekunden möblieren</h1>
+        <p class="hero-sub">Virtuelles Home Staging, realistische Renderings und Bildbearbeitung – selbst per Software oder als Service.</p>
+        <div class="hero-actions">
+          <a href="#" class="btn btn-primary">Software testen</a>
+          <a href="#kontakt" class="btn btn-secondary">Bilder bearbeiten lassen</a>
         </div>
+        <article class="before-after card">
+          <div class="split before">
+            <span class="label">Vorher</span>
+            <small>Leer</small>
+          </div>
+          <div class="split after">
+            <span class="label">Nachher</span>
+            <small>Möbliert</small>
+          </div>
+        </article>
+      </section>
 
-        <div id="dashboard-view" class="hidden">
-          <h2>Dashboard</h2>
-          <button id="logout-btn" type="button" class="btn btn-primary">Logout</button>
+      <section class="container" id="wege">
+        <h2>Zwei Wege zum perfekten Immobilienbild</h2>
+        <div class="grid two-col">
+          <article class="card pathway">
+            <div class="icon">✦</div>
+            <h3>Selbst gestalten</h3>
+            <p>Nutzen Sie die SaaS-Plattform und erstellen Sie Visualisierungen direkt im Browser.</p>
+            <a href="#" class="text-link">Zur Software</a>
+          </article>
+          <article class="card pathway">
+            <div class="icon">⬆</div>
+            <h3>Als Service buchen</h3>
+            <p>Senden Sie uns Ihre Bilder. Wir bearbeiten sie und liefern fertige Visualisierungen zurück.</p>
+            <a href="#kontakt" class="text-link">Projekt anfragen</a>
+          </article>
         </div>
       </section>
+
+      <section class="container" id="funktionen">
+        <h2>Alles, was Immobilienbilder stärker macht</h2>
+        <div class="grid feature-grid">
+          <article class="card feature"><div class="icon">🛋</div><h3>Virtuell möblieren</h3><p>Leere Räume mit einem Klick einrichten.</p></article>
+          <article class="card feature"><div class="icon">🎨</div><h3>Stil anpassen</h3><p>Looks, Möbel und Atmosphäre flexibel ändern.</p></article>
+          <article class="card feature"><div class="icon">◻</div><h3>3D-Renderings verbessern</h3><p>CGI in fotorealistische Bilder wandeln.</p></article>
+          <article class="card feature"><div class="icon">✨</div><h3>Bilder optimieren</h3><p>Exposés klarer, moderner und hochwertiger machen.</p></article>
+        </div>
+      </section>
+
+      <section class="container" id="beispiele">
+        <h2>Vorher. Nachher. Verkauft besser.</h2>
+        <div class="grid gallery-grid">
+          <article class="card gallery-item"><div class="placeholder"></div><p>Leerer Raum → möbliertes Wohnzimmer</p></article>
+          <article class="card gallery-item"><div class="placeholder alt"></div><p>Rendering → realistisches Bild</p></article>
+          <article class="card gallery-item"><div class="placeholder soft"></div><p>Einfaches Foto → hochwertiges Inserat</p></article>
+        </div>
+      </section>
+
+      <section class="container">
+        <h2>Gemacht für Immobilienprofis</h2>
+        <div class="pill-row">
+          <span class="pill">Makler</span><span class="pill">Architekten</span><span class="pill">Bauträger</span><span class="pill">Eigentümer</span><span class="pill">Interior Designer</span>
+        </div>
+      </section>
+
+      <section class="container" id="preise">
+        <h2>Software nutzen oder Service anfragen</h2>
+        <div class="grid two-col">
+          <article class="card pricing"><h3>SaaS</h3><p>Für Teams, die regelmäßig Bilder selbst bearbeiten.</p><ul><li>Direkter Zugang</li><li>Mehrere Stilrichtungen</li><li>Schnelle Ergebnisse</li></ul><a href="#" class="btn btn-secondary">Preise ansehen</a></article>
+          <article class="card pricing"><h3>Service</h3><p>Für Kunden, die fertige Bilder erhalten möchten.</p><ul><li>Upload der Bilder</li><li>Manuelle Qualitätsprüfung</li><li>Lieferung fertiger Visualisierungen</li></ul><a href="#kontakt" class="btn btn-secondary">Offerte anfragen</a></article>
+        </div>
+      </section>
+
+      <section class="container" id="kontakt">
+        <h2>Starten Sie mit Ihrem ersten Bild</h2>
+        <form class="card contact-form">
+          <label>Name<input type="text" name="name" required /></label>
+          <label>E-Mail<input type="email" name="email" required /></label>
+          <label>Unternehmen<input type="text" name="company" /></label>
+          <label>Auswahl
+            <select name="interest">
+              <option>Software testen</option>
+              <option>Service anfragen</option>
+              <option>Beides</option>
+            </select>
+          </label>
+          <label>Nachricht<textarea name="message" rows="4"></textarea></label>
+          <label>Datei-Upload (optional)<input type="file" disabled /></label>
+          <button type="submit" class="btn btn-primary">Anfrage senden</button>
+        </form>
+      </section>
+
+      <section class="container faq">
+        <h2>FAQ</h2>
+        <details class="card"><summary>Kann ich die Software selbst nutzen?</summary><p>Ja. Sie arbeiten direkt im Browser.</p></details>
+        <details class="card"><summary>Kann ich Bilder auch einfach zusenden?</summary><p>Ja. Unser Team übernimmt die Bearbeitung für Sie.</p></details>
+        <details class="card"><summary>Funktioniert es mit leeren Räumen?</summary><p>Ja. Genau dafür ist das virtuelle Staging gedacht.</p></details>
+        <details class="card"><summary>Können 3D-Renderings realistischer gemacht werden?</summary><p>Ja. Renderings werden in fotorealistische Bilder umgewandelt.</p></details>
+      </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div><strong>RoomAI</strong><p>Mehr Wirkung für jedes Immobilienbild.</p></div>
+        <nav aria-label="Footer Links"><a href="#">Datenschutz</a><a href="#">Impressum</a><a href="#kontakt">Kontakt</a></nav>
+      </div>
+    </footer>
   </body>
 </html>

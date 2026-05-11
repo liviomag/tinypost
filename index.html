@@ -31,14 +31,11 @@
         </p>
 
         <div class="hero__cta-group">
-          <button class="btn btn--primary btn--shine js-select-offer" data-offer="service" type="button">
-            Dienstleistung anfragen
+          <button class="btn btn--primary btn--shine js-select-offer" type="button">
+            Dienst
           </button>
-          <button class="btn btn--ghost btn--shine js-select-offer" data-offer="saas" type="button">
-            SaaS-Applikation anfragen
-          </button>
-          <button class="btn btn--ghost btn--shine js-scroll-target" data-target="was-koennen-wir" type="button">
-            Was können wir?
+          <button class="btn btn--ghost btn--shine js-select-offer" type="button">
+            Kontaktaufnahme
           </button>
         </div>
 
@@ -56,7 +53,7 @@
     <main>
       <section class="offers section container reveal" aria-labelledby="angebote-heading">
         <div class="section__intro">
-          <h2 id="angebote-heading">Zwei Wege zu einem perfekten mobilen Bild</h2>
+          <h2 id="angebote-heading">Zwei Wege zu einem perfekten Bild</h2>
         </div>
 
         <div class="offer-grid">
@@ -80,9 +77,6 @@
               <li>Bilder einreichen</li>
               <li>Ergebnisse erhalten</li>
             </ol>
-            <button class="btn btn--service-highlight js-select-offer" data-offer="service" type="button">
-              Für Dienstleistung eintragen
-            </button>
           </article>
 
           <article class="offer-card offer-card--saas">
@@ -105,9 +99,6 @@
               <li>Selbstständig bearbeiten</li>
               <li>Ergebnisse erhalten</li>
             </ol>
-            <button class="btn btn--ghost btn--saas-outline js-select-offer" data-offer="saas" type="button">
-              Für SaaS eintragen
-            </button>
           </article>
         </div>
       </section>
@@ -120,7 +111,7 @@
 
         <div class="proof-grid">
           <article class="proof-card">
-            <h3>Immobilien möblieren & verändern</h3>
+            <h3>Immobilien möblieren</h3>
             <div class="proof-images" aria-label="Vorher-Nachher Möblierung">
               <img class="proof-image proof-image--before" id="proof-furniture-before" src="" alt="Vorher: Immobilien Möblierung" loading="lazy" />
               <img class="proof-image proof-image--after" id="proof-furniture-after" src="" alt="Nachher: Immobilien Möblierung" loading="lazy" />
@@ -128,7 +119,7 @@
           </article>
 
           <article class="proof-card">
-            <h3>3D-Rendering in reales Bild umwandeln</h3>
+            <h3>3D Rendering</h3>
             <div class="proof-images" aria-label="Vorher-Nachher Rendering">
               <img class="proof-image proof-image--before" id="proof-render-before" src="" alt="Vorher: 3D Rendering" loading="lazy" />
               <img class="proof-image proof-image--after" id="proof-render-after" src="" alt="Nachher: Reales Bild" loading="lazy" />
@@ -143,12 +134,6 @@
             </div>
           </article>
         </div>
-
-        <div class="proof-cta">
-          <button class="btn btn--primary btn--shine js-select-offer" data-offer="service" type="button">
-            Ich bin überzeugt
-          </button>
-        </div>
       </section>
 
       <section class="lead-form section container reveal" id="kontakt" aria-labelledby="kontakt-heading">
@@ -158,24 +143,9 @@
         </div>
 
         <form id="leadForm" novalidate>
-          <fieldset class="choice-group">
-            <legend>Ich interessiere mich für:</legend>
-            <label class="choice-card" for="option-service">
-              <input type="radio" id="option-service" name="angebot" value="Dienstleistung" required />
-              <span>Dienstleistung</span>
-            </label>
-            <label class="choice-card" for="option-saas">
-              <input type="radio" id="option-saas" name="angebot" value="SaaS-Applikation" />
-              <span>SaaS-Applikation</span>
-            </label>
-            <label class="choice-card" for="option-both">
-              <input type="radio" id="option-both" name="angebot" value="Beides" />
-              <span>Beides</span>
-            </label>
-          </fieldset>
 
           <div class="field-row">
-            <label for="firstName">Vorname *</label>
+            <label for="firstName">Name *</label>
             <input id="firstName" name="firstName" type="text" autocomplete="given-name" required />
           </div>
 
@@ -184,16 +154,11 @@
             <input id="email" name="email" type="email" autocomplete="email" required />
           </div>
 
-          <div class="field-row">
-            <label for="phone">Telefonnummer (optional)</label>
-            <input id="phone" name="phone" type="tel" autocomplete="tel" />
-          </div>
-
 
           <button type="submit" class="btn btn--primary btn--shine">Bereit für die Zukunft</button>
           <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
           <p class="form-hint">
-            Mit <strong>*</strong> markierte Felder sind verpflichtend. Die Telefonnummer ist optional.
+            Mit <strong>*</strong> markierte Felder sind verpflichtend.
           </p>
         </form>
       </section>

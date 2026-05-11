@@ -1,19 +1,9 @@
 // Scroll + Vorauswahl der passenden Option für alle CTA-Buttons.
 const offerButtons = document.querySelectorAll('.js-select-offer');
 const contactSection = document.getElementById('kontakt');
-const optionService = document.getElementById('option-service');
-const optionSaas = document.getElementById('option-saas');
-
-function selectOfferAndScroll(offer) {
-  if (offer === 'service') optionService.checked = true;
-  if (offer === 'saas') optionSaas.checked = true;
-
-  contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
 offerButtons.forEach((button) => {
   button.addEventListener('click', () => {
-    selectOfferAndScroll(button.dataset.offer);
+    contactSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 });
 
@@ -110,12 +100,10 @@ async function applyProofImagesFromConfig() {
 leadForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
-  const selectedOffer = leadForm.querySelector('input[name="angebot"]:checked');
   const firstName = document.getElementById('firstName');
   const email = document.getElementById('email');
-  const phone = document.getElementById('phone');
 
-  if (!selectedOffer || !firstName.value.trim() || !email.value.trim()) {
+  if (!firstName.value.trim() || !email.value.trim()) {
     messageEl.textContent = 'Bitte füllen Sie alle Felder aus.';
     messageEl.className = 'form-message error';
     return;
@@ -130,8 +118,7 @@ leadForm.addEventListener('submit', async (event) => {
   const payload = {
     firstName: firstName.value.trim(),
     email: email.value.trim(),
-    phone: phone.value.trim(),
-    interestedIn: selectedOffer.value
+    interestedIn: 'Dienstleistung'
   };
 
   try {

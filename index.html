@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visualize Estate | Immobilienbilder professionell visualisiert</title>
+    <link id="favicon" rel="icon" type="image/png" href="assets/favicon.svg" />
     <meta
       name="description"
       content="Visualize Estate: Wählen Sie zwischen professioneller Dienstleistung oder flexibler SaaS-Applikation für hochwertige Immobilienbilder."
@@ -19,7 +20,10 @@
   <body>
     <header class="hero section reveal" id="top">
       <div class="hero__content container">
-        <p class="brand">Visualize Estate</p>
+        <div class="brand-block">
+          <img id="heroLogo" class="hero-logo" src="assets/brand-logo.svg" alt="Visualize Estate Logo" />
+          <p class="brand">Visualize Estate</p>
+        </div>
         <h1>Ihre Immobilienbilder. Professionell visualisiert.</h1>
         <p class="subheadline">
           Wählen Sie zwischen unserer schnellen Dienstleistung oder der flexiblen
@@ -106,6 +110,7 @@
         <div class="section__intro">
           <h2 id="kontakt-heading">Kontaktaufnahme anfordern</h2>
           <p>Wählen Sie Ihre bevorzugte Option und wir melden uns zeitnah.</p>
+          <p class="form-hint">Mit <strong>*</strong> markierte Felder sind verpflichtend. Die Telefonnummer ist optional.</p>
         </div>
 
         <form id="leadForm" novalidate>
@@ -119,17 +124,38 @@
               <input type="radio" id="option-saas" name="angebot" value="SaaS-Applikation" />
               <span>SaaS-Applikation</span>
             </label>
+            <label class="choice-card" for="option-both">
+              <input type="radio" id="option-both" name="angebot" value="Beides" />
+              <span>Beides</span>
+            </label>
           </fieldset>
 
           <div class="field-row">
-            <label for="firstName">Vorname</label>
+            <label for="firstName">Vorname *</label>
             <input id="firstName" name="firstName" type="text" autocomplete="given-name" required />
           </div>
 
           <div class="field-row">
-            <label for="email">E-Mail</label>
+            <label for="email">E-Mail *</label>
             <input id="email" name="email" type="email" autocomplete="email" required />
           </div>
+
+          <div class="field-row">
+            <label for="phone">Telefonnummer (optional)</label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" />
+          </div>
+
+          <fieldset class="branding-upload">
+            <legend>Branding hochladen</legend>
+            <div class="field-row">
+              <label for="faviconUpload">Tab-Logo (Favicon)</label>
+              <input id="faviconUpload" type="file" accept="image/png,image/jpeg,image/svg+xml,image/x-icon" />
+            </div>
+            <div class="field-row">
+              <label for="heroLogoUpload">Logo im Kopfbereich</label>
+              <input id="heroLogoUpload" type="file" accept="image/png,image/jpeg,image/svg+xml" />
+            </div>
+          </fieldset>
 
           <button type="submit" class="btn btn--primary">Kontaktaufnahme anfordern</button>
           <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
@@ -139,7 +165,7 @@
 
     <footer class="footer section reveal">
       <div class="container footer__inner">
-        <p>Zwei Gründer aus der Region Sursee.</p>
+        <p>Eine Idee von der Region Sursee.</p>
         <small>Vertrauensvoll. Diskret. Persönlich.</small>
       </div>
     </footer>

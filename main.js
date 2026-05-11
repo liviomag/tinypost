@@ -61,3 +61,46 @@ const observer = new IntersectionObserver(
 );
 
 reveals.forEach((el) => observer.observe(el));
+
+
+// Branding-Uploads: Favicon + Kopfbereich-Logo im Browser speichern.
+const faviconEl = document.getElementById("favicon");
+const heroLogoEl = document.getElementById("heroLogo");
+const faviconUpload = document.getElementById("faviconUpload");
+const heroLogoUpload = document.getElementById("heroLogoUpload");
+
+function applyStoredBranding() {
+  const storedFavicon = localStorage.getItem("customFavicon");
+  const storedHeroLogo = localStorage.getItem("customHeroLogo");
+
+  if (storedFavicon) faviconEl.href = storedFavicon;
+  if (storedHeroLogo) heroLogoEl.src = storedHeroLogo;
+}
+
+function fileToDataURL(file, callback) {
+  const reader = new FileReader();
+  reader.onload = () => callback(reader.result);
+  reader.readAsDataURL(file);
+}
+
+faviconUpload?.addEventListener("change", (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  fileToDataURL(file, (dataUrl) => {
+    faviconEl.href = dataUrl;
+    localStorage.setItem("customFavicon", dataUrl);
+  });
+});
+
+heroLogoUpload?.addEventListener("change", (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  fileToDataURL(file, (dataUrl) => {
+    heroLogoEl.src = dataUrl;
+    localStorage.setItem("customHeroLogo", dataUrl);
+  });
+});
+
+applyStoredBranding();

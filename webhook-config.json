@@ -2,12 +2,12 @@
   "webhookUrl": "https://n8n.srv1019917.hstgr.cloud/webhook-test/fa76dd54-da87-477a-a8a2-b409043c2d38",
   "proofImages": {
     "furniture": {
-      "before": "",
-      "after": ""
+      "before": "s_i.jpg",
+      "after": "s_o.jpg"
     },
     "rendering": {
-      "before": "",
-      "after": ""
+      "before": "3d_i.png",
+      "after": "3d_o.jpg"
     },
     "volumeModel": {
       "before": "",

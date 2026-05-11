@@ -1,7 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ArrowRight, Building2, Handshake, Sparkles } from 'lucide-react'
 import './styles.css'
+
+function Icon({ className = '' }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path d="M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="m13 6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 function HandArrow({ className = '' }) {
   return (
@@ -12,7 +20,7 @@ function HandArrow({ className = '' }) {
   )
 }
 
-function OfferCard({ icon: Icon, title, description, steps, cta, onClick }) {
+function OfferCard({ title, description, steps, cta, onClick }) {
   return (
     <article className="group rounded-3xl border border-copper/20 bg-white p-8 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
       <Icon className="mb-5 h-9 w-9 text-copper draw-in" />
@@ -27,7 +35,7 @@ function OfferCard({ icon: Icon, title, description, steps, cta, onClick }) {
         ))}
       </ol>
       <button onClick={onClick} className="mt-7 inline-flex items-center gap-2 rounded-full border border-ink/10 bg-ink px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-ink/90">
-        {cta} <ArrowRight className="h-4 w-4" />
+        {cta} <Icon className="h-4 w-4" />
       </button>
     </article>
   )
@@ -63,7 +71,6 @@ function App() {
 
         <section className="mt-16 grid gap-6 md:mt-20 md:grid-cols-2">
           <OfferCard
-            icon={Handshake}
             title="Dienstleistung"
             description="Sie senden uns Ihre Bilder und Wünsche. Wir bearbeiten diese professionell und liefern Ihnen das Ergebnis per E-Mail."
             steps={['Kontakt aufnehmen', 'Bild einreichen', 'Ergebnis erhalten']}
@@ -71,7 +78,6 @@ function App() {
             onClick={() => setInterest('Dienstleistung')}
           />
           <OfferCard
-            icon={Sparkles}
             title="SaaS-Applikation"
             description="Sie bearbeiten Immobilienbilder selbstständig mit unserer SaaS-Lösung."
             steps={['Kontakt aufnehmen', 'Persönliche Beratung', 'Selbstständig bearbeiten']}
@@ -82,7 +88,7 @@ function App() {
 
         <section className="mt-16 rounded-3xl border border-copper/30 bg-white p-7 shadow-soft md:p-10">
           <div className="mb-6 flex items-center gap-3">
-            <Building2 className="h-7 w-7 text-copper draw-in" />
+            <Icon className="h-7 w-7 text-copper draw-in" />
             <h2 className="font-serif text-3xl">Kontaktformular</h2>
           </div>
           <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
@@ -104,18 +110,12 @@ function App() {
             <div className="md:col-span-2 mt-1 flex flex-col items-start gap-3">
               <button type="submit" className="rounded-full bg-copper px-7 py-3 font-medium text-white transition hover:-translate-y-0.5 hover:bg-copper/90">Kontaktaufnahme anfordern</button>
               {submitted && (
-                <p className="inline-flex items-center gap-2 rounded-full border border-copper/35 bg-copper/10 px-4 py-2 text-sm text-ink"><Sparkles className="h-4 w-4 text-copper" />Vielen Dank. Wir melden uns zeitnah bei Ihnen.</p>
+                <p className="inline-flex items-center gap-2 rounded-full border border-copper/35 bg-copper/10 px-4 py-2 text-sm text-ink"><Icon className="h-4 w-4 text-copper" />Vielen Dank. Wir melden uns zeitnah bei Ihnen.</p>
               )}
             </div>
           </form>
         </section>
       </main>
-      <footer className="border-t border-copper/20 bg-white/80">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-8 text-sm text-ink/70 md:flex-row md:items-center md:justify-between">
-          <p>Zwei Gründer aus der Region Sursee.</p>
-          <p>Vertraulich · Persönlich · Premium Immobilienfokus</p>
-        </div>
-      </footer>
     </div>
   )
 }

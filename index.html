@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualize Estate | Immobilienbilder professionell visualisiert</title>
+    <meta
+      name="description"
+      content="Visualize Estate: Wählen Sie zwischen professioneller Dienstleistung oder flexibler SaaS-Applikation für hochwertige Immobilienbilder."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="hero section reveal" id="top">
+      <div class="hero__content container">
+        <p class="brand">Visualize Estate</p>
+        <h1>Ihre Immobilienbilder. Professionell visualisiert.</h1>
+        <p class="subheadline">
+          Wählen Sie zwischen unserer schnellen Dienstleistung oder der flexiblen
+          SaaS-Applikation.
+        </p>
+
+        <div class="hero__cta-group">
+          <button class="btn btn--primary js-select-offer" data-offer="service" type="button">
+            Dienstleistung anfragen
+          </button>
+          <button class="btn btn--ghost js-select-offer" data-offer="saas" type="button">
+            SaaS-Applikation anfragen
+          </button>
+        </div>
+
+        <svg class="hero-arrow" viewBox="0 0 240 80" aria-hidden="true">
+          <path
+            d="M4 60 C 70 16, 130 16, 196 58"
+            class="draw-line"
+            fill="none"
+          />
+          <path d="M182 48 L196 58 L180 64" class="draw-line" fill="none" />
+        </svg>
+      </div>
+    </header>
+
+    <main>
+      <section class="offers section container reveal" aria-labelledby="angebote-heading">
+        <div class="section__intro">
+          <h2 id="angebote-heading">Zwei Wege zu perfekten Immobilienbildern</h2>
+        </div>
+
+        <div class="offer-grid">
+          <article class="offer-card">
+            <div class="offer-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48">
+                <path d="M9 34V14h30v20" />
+                <path d="M9 34h30" />
+                <path d="M15 29l8-8 6 6 4-4 6 6" />
+              </svg>
+            </div>
+            <h3>Dienstleistung</h3>
+            <p>
+              Sie senden uns Ihre Bilder und Wünsche. Wir bearbeiten diese
+              professionell und liefern Ihnen das Ergebnis per E-Mail.
+            </p>
+            <ol>
+              <li>Kontakt aufnehmen</li>
+              <li>Bild einreichen</li>
+              <li>Ergebnis erhalten</li>
+            </ol>
+            <button class="btn btn--primary js-select-offer" data-offer="service" type="button">
+              Für Dienstleistung eintragen
+            </button>
+          </article>
+
+          <article class="offer-card">
+            <div class="offer-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48">
+                <rect x="8" y="10" width="32" height="24" rx="4" />
+                <path d="M14 38h20" />
+                <path d="M20 22h8" />
+                <path d="M24 18v8" />
+              </svg>
+            </div>
+            <h3>SaaS-Applikation</h3>
+            <p>
+              Sie bearbeiten Immobilienbilder selbstständig mit unserer
+              SaaS-Lösung.
+            </p>
+            <ol>
+              <li>Kontakt aufnehmen</li>
+              <li>Persönliche Beratung</li>
+              <li>Selbstständig bearbeiten</li>
+            </ol>
+            <button class="btn btn--ghost js-select-offer" data-offer="saas" type="button">
+              Für SaaS eintragen
+            </button>
+          </article>
+        </div>
+      </section>
+
+      <section class="lead-form section container reveal" id="kontakt" aria-labelledby="kontakt-heading">
+        <div class="section__intro">
+          <h2 id="kontakt-heading">Kontaktaufnahme anfordern</h2>
+          <p>Wählen Sie Ihre bevorzugte Option und wir melden uns zeitnah.</p>
+        </div>
+
+        <form id="leadForm" novalidate>
+          <fieldset class="choice-group">
+            <legend>Ich interessiere mich für:</legend>
+            <label class="choice-card" for="option-service">
+              <input type="radio" id="option-service" name="angebot" value="Dienstleistung" required />
+              <span>Dienstleistung</span>
+            </label>
+            <label class="choice-card" for="option-saas">
+              <input type="radio" id="option-saas" name="angebot" value="SaaS-Applikation" />
+              <span>SaaS-Applikation</span>
+            </label>
+          </fieldset>
+
+          <div class="field-row">
+            <label for="firstName">Vorname</label>
+            <input id="firstName" name="firstName" type="text" autocomplete="given-name" required />
+          </div>
+
+          <div class="field-row">
+            <label for="email">E-Mail</label>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+          </div>
+
+          <button type="submit" class="btn btn--primary">Kontaktaufnahme anfordern</button>
+          <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer section reveal">
+      <div class="container footer__inner">
+        <p>Zwei Gründer aus der Region Sursee.</p>
+        <small>Vertrauensvoll. Diskret. Persönlich.</small>
+      </div>
+    </footer>
+
+    <script src="main.js"></script>
+  </body>
+</html>

@@ -57,7 +57,7 @@
         </div>
 
         <div class="offer-grid">
-          <article class="offer-card">
+          <article class="offer-card offer-card--service">
             <div class="offer-card__icon" aria-hidden="true">
               <svg viewBox="0 0 48 48">
                 <path d="M9 34V14h30v20" />
@@ -75,12 +75,12 @@
               <li>Bild einreichen</li>
               <li>Ergebnis erhalten</li>
             </ol>
-            <button class="btn btn--primary js-select-offer" data-offer="service" type="button">
+            <button class="btn btn--service-highlight js-select-offer" data-offer="service" type="button">
               Für Dienstleistung eintragen
             </button>
           </article>
 
-          <article class="offer-card">
+          <article class="offer-card offer-card--saas">
             <div class="offer-card__icon" aria-hidden="true">
               <svg viewBox="0 0 48 48">
                 <rect x="8" y="10" width="32" height="24" rx="4" />
@@ -99,7 +99,7 @@
               <li>Persönliche Beratung</li>
               <li>Selbstständig bearbeiten</li>
             </ol>
-            <button class="btn btn--ghost js-select-offer" data-offer="saas" type="button">
+            <button class="btn btn--ghost btn--saas-outline js-select-offer" data-offer="saas" type="button">
               Für SaaS eintragen
             </button>
           </article>
@@ -145,17 +145,6 @@
             <input id="phone" name="phone" type="tel" autocomplete="tel" />
           </div>
 
-          <fieldset class="branding-upload">
-            <legend>Branding hochladen</legend>
-            <div class="field-row">
-              <label for="faviconUpload">Tab-Logo (Favicon)</label>
-              <input id="faviconUpload" type="file" accept="image/png,image/jpeg,image/svg+xml,image/x-icon" />
-            </div>
-            <div class="field-row">
-              <label for="heroLogoUpload">Logo im Kopfbereich</label>
-              <input id="heroLogoUpload" type="file" accept="image/png,image/jpeg,image/svg+xml" />
-            </div>
-          </fieldset>
 
           <button type="submit" class="btn btn--primary">Kontaktaufnahme anfordern</button>
           <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>

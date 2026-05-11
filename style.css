@@ -138,6 +138,23 @@ h1 {
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
+
+
+.offer-card--saas {
+  border-color: var(--accent);
+}
+
+.btn--service-highlight {
+  background: #fff;
+  color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.btn--saas-outline {
+  background: #fff;
+  border-color: var(--accent);
+  color: var(--primary-dark);
+}
 .offer-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 16px 34px rgba(16, 20, 23, 0.12);
@@ -304,8 +321,8 @@ h1 span {
 .offer-card:first-child .offer-card__icon { border-color: rgba(255,255,255,0.2); }
 
 .offer-card:last-child {
-  background: linear-gradient(170deg, #f6e6c9 0%, #edd6aa 100%);
-  border-color: rgba(184, 115, 51, 0.35);
+  background: #fff;
+  border-color: var(--accent);
 }
 
 .form-hint {
@@ -313,15 +330,8 @@ h1 span {
   font-size: 0.94rem;
 }
 
-.branding-upload {
-  border: 1px dashed rgba(16, 20, 23, 0.2);
-  border-radius: 12px;
-  padding: 0.85rem;
-  margin-bottom: 1rem;
-}
 
-input[type="tel"],
-input[type="file"] {
+input[type="tel"] {
   border: 1px solid rgba(16, 20, 23, 0.25);
   border-radius: 10px;
   padding: 0.65rem;

@@ -16,3 +16,35 @@
     });
   });
 })();
+
+(async () => {
+  const mappingPath = 'image-mapping.json';
+  const assetsBasePath = 'Assets';
+
+  try {
+    const response = await fetch(mappingPath);
+    if (!response.ok) {
+      throw new Error(`Image mapping konnte nicht geladen werden: ${response.status}`);
+    }
+
+    const imageMapping = await response.json();
+
+    document.querySelectorAll('[data-image-key]').forEach((element) => {
+      const imageKey = element.dataset.imageKey;
+      const imageFile = imageMapping[imageKey];
+
+      if (!imageFile) {
+        console.warn(`Kein Bild für Key "${imageKey}" in ${mappingPath} gefunden.`);
+        return;
+      }
+
+      if (element.tagName === 'IMG') {
+        element.src = `${assetsBasePath}/${imageFile}`;
+      } else {
+        element.style.backgroundImage = `url("${assetsBasePath}/${imageFile}")`;
+      }
+    });
+  } catch (error) {
+    console.error('Fehler beim Laden der Bildzuordnung.', error);
+  }
+})();

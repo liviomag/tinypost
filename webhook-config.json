@@ -16,6 +16,7 @@
   },
   "convinceButtonUrl": "https://forms.gle/bpZWvEsMpmtw3ATi6",
   "proofVideos": {
+    "furniture": "3d_video.mp4",
     "rendering": "3d_video.mp4",
     "volumeModel": "3d_video.mp4"
   }

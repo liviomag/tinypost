@@ -455,12 +455,12 @@ input[type="tel"] {
 
 
 .btn--video {
-  width: 64px;
-  height: 64px;
-  min-width: 64px;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
   border: 0;
-  border-radius: 999px;
-  background: rgba(255, 0, 0, 0.92);
+  border-radius: 0;
+  background: transparent;
   display: grid;
   place-items: center;
   padding: 0;
@@ -469,10 +469,17 @@ input[type="tel"] {
 .play-icon {
   width: 0;
   height: 0;
-  border-top: 11px solid transparent;
-  border-bottom: 11px solid transparent;
-  border-left: 18px solid #fff;
-  margin-left: 3px;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 20px solid #000;
+  margin-left: 2px;
+}
+
+
+.btn--video:hover,
+.btn--video:focus-visible {
+  transform: none;
+  box-shadow: none;
 }
 
 .proof-video-button {
@@ -485,14 +492,22 @@ input[type="tel"] {
 
 .proof-video-button:hover,
 .proof-video-button:focus-visible {
-  background: #ff0000;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  box-shadow: none;
 }
 
 @media (max-width: 640px) {
   .btn--video {
-    width: 54px;
-    height: 54px;
-    min-width: 54px;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+  }
+
+  .play-icon {
+    border-top-width: 10px;
+    border-bottom-width: 10px;
+    border-left-width: 17px;
   }
 }
 

@@ -461,11 +461,12 @@ input[type="tel"] {
   min-width: 56px;
   border: 3px solid #000;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
+  background: transparent;
   display: grid;
   place-items: center;
   padding: 0;
 }
+
 
 .play-icon {
   width: 0;
@@ -474,6 +475,18 @@ input[type="tel"] {
   border-bottom: 12px solid transparent;
   border-left: 20px solid #000;
   margin-left: 2px;
+  transform-origin: center;
+}
+
+@keyframes play-icon-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.14);
+  }
 }
 
 
@@ -496,6 +509,11 @@ input[type="tel"] {
   transform: translate(-50%, -50%);
   background: transparent;
   box-shadow: none;
+}
+
+.proof-video-button:hover .play-icon,
+.proof-video-button:focus-visible .play-icon {
+  animation: play-icon-pulse 420ms ease-in-out;
 }
 
 @media (max-width: 640px) {

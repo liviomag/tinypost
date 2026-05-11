@@ -208,6 +208,8 @@ h1 {
 
 .offer-card .btn {
   margin-top: auto;
+  width: fit-content;
+  align-self: center;
 }
 
 .lead-form form {

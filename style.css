@@ -274,3 +274,57 @@ input:focus-visible {
     padding: 4rem 0;
   }
 }
+
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.hero-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+h1 span {
+  white-space: nowrap;
+}
+
+.offer-card:first-child {
+  background: #11161a;
+  color: #f1f3f5;
+  border-color: rgba(255,255,255,0.08);
+}
+.offer-card:first-child h3 { color: #fff; }
+.offer-card:first-child .offer-card__icon { border-color: rgba(255,255,255,0.2); }
+
+.offer-card:last-child {
+  background: linear-gradient(170deg, #f6e6c9 0%, #edd6aa 100%);
+  border-color: rgba(184, 115, 51, 0.35);
+}
+
+.form-hint {
+  margin: 0.2rem 0 1.1rem;
+  font-size: 0.94rem;
+}
+
+.branding-upload {
+  border: 1px dashed rgba(16, 20, 23, 0.2);
+  border-radius: 12px;
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+input[type="tel"],
+input[type="file"] {
+  border: 1px solid rgba(16, 20, 23, 0.25);
+  border-radius: 10px;
+  padding: 0.65rem;
+  font: inherit;
+  background: #fff;
+}

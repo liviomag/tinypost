@@ -54,17 +54,36 @@ const proofImageFields = {
   }
 };
 
+function resolveProofImageUrl(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== 'string') return '';
+
+  const trimmedUrl = imageUrl.trim();
+  if (!trimmedUrl) return '';
+
+  if (/^(https?:)?\/\//i.test(trimmedUrl) || trimmedUrl.startsWith('data:')) {
+    return trimmedUrl;
+  }
+
+  if (trimmedUrl.startsWith('assets/')) {
+    return trimmedUrl;
+  }
+
+  return `assets/${trimmedUrl}`;
+}
+
 function applyProofImage(targetEl, imageUrl, fallbackLabel) {
   if (!targetEl) return;
-  if (imageUrl && typeof imageUrl === 'string') {
-    targetEl.src = imageUrl;
+
+  const resolvedUrl = resolveProofImageUrl(imageUrl);
+  if (resolvedUrl) {
+    targetEl.src = resolvedUrl;
     return;
   }
 
   if (targetEl.getAttribute('src')) return;
 
   const label = encodeURIComponent(fallbackLabel);
-  targetEl.src = `https://placehold.co/640x420/eceff1/1b2024?text=${label}`;
+  targetEl.src = `https://placehold.co/640x480/eceff1/1b2024?text=${label}`;
 }
 
 async function applyProofImagesFromConfig() {

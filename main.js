@@ -1,12 +1,3 @@
-// Scroll + Vorauswahl der passenden Option für alle CTA-Buttons.
-const offerButtons = document.querySelectorAll('.js-select-offer');
-const contactSection = document.getElementById('kontakt');
-offerButtons.forEach((button) => {
-  button.addEventListener('click', () => {
-    contactSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-});
-
 const scrollButtons = document.querySelectorAll('.js-scroll-target');
 
 scrollButtons.forEach((button) => {
@@ -69,6 +60,8 @@ function applyProofImage(targetEl, imageUrl, fallbackLabel) {
     targetEl.src = imageUrl;
     return;
   }
+
+  if (targetEl.getAttribute('src')) return;
 
   const label = encodeURIComponent(fallbackLabel);
   targetEl.src = `https://placehold.co/640x420/eceff1/1b2024?text=${label}`;

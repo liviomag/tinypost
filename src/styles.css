@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.draw-in {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: drawLine 1.6s ease forwards;
+}
+
+.hand-arrow path {
+  stroke-dasharray: 140;
+  stroke-dashoffset: 140;
+  animation: drawLine 1.8s ease forwards;
+}
+
+@keyframes drawLine {
+  to { stroke-dashoffset: 0; }
+}

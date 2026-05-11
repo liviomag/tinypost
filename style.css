@@ -147,6 +147,8 @@ h1 {
   box-shadow: var(--shadow);
   padding: 1.5rem;
   transition: transform 180ms ease, box-shadow 180ms ease;
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -195,9 +197,17 @@ h1 {
   margin-bottom: 0.45rem;
 }
 
+.offer-card p {
+  margin-bottom: 1rem;
+}
+
 .offer-card ol {
   padding-left: 1rem;
-  margin-bottom: 1.3rem;
+  margin: 0 0 1.5rem;
+}
+
+.offer-card .btn {
+  margin-top: auto;
 }
 
 .lead-form form {
@@ -342,7 +352,7 @@ h1 span {
 }
 
 .form-hint {
-  margin: 0.2rem 0 1.1rem;
+  margin: 1rem 0 0;
   font-size: 0.94rem;
 }
 

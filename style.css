@@ -405,11 +405,7 @@ input[type="tel"] {
 }
 
 .proof-card {
-  background: var(--card-bg);
-  border: 1px solid rgba(16, 20, 23, 0.08);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.2rem;
+  padding: 0;
 }
 
 .proof-card h3 {
@@ -424,14 +420,13 @@ input[type="tel"] {
 }
 
 .proof-image {
-  border-radius: 12px;
+  border-radius: 16px;
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: contain;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
   background: #f5f6f7;
   border: 1px solid var(--line);
-  padding: 0.25rem;
 }
 
 .proof-image--before {

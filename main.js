@@ -39,6 +39,40 @@ async function getWebhookUrl() {
   return config.webhookUrl;
 }
 
+const convinceButton = document.getElementById('convinceButton');
+
+function resolveExternalLink(linkUrl) {
+  if (!linkUrl || typeof linkUrl !== 'string') return '';
+
+  const trimmedUrl = linkUrl.trim();
+  if (!trimmedUrl) return '';
+
+  if (/^https?:\/\//i.test(trimmedUrl)) return trimmedUrl;
+
+  return `https://${trimmedUrl}`;
+}
+
+async function applyConvinceButtonLink() {
+  if (!convinceButton) return;
+
+  try {
+    const config = await getRuntimeConfig();
+    const link = resolveExternalLink(config.convinceButtonUrl);
+
+    if (link) {
+      convinceButton.href = link;
+      return;
+    }
+  } catch (error) {
+    // noop - fallback below
+  }
+
+  convinceButton.href = '#kontakt';
+  convinceButton.removeAttribute('target');
+  convinceButton.removeAttribute('rel');
+}
+
+
 const proofImageFields = {
   furniture: {
     before: document.getElementById('proof-furniture-before'),
@@ -213,3 +247,4 @@ heroLogoUpload?.addEventListener("change", (event) => {
 
 applyStoredBranding();
 applyProofImagesFromConfig();
+applyConvinceButtonLink();

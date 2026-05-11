@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ArrowRight, Building2, Handshake, Sparkles, WandSparkles } from 'lucide-react'
+import { ArrowRight, Building2, Handshake, Sparkles } from 'lucide-react'
 import './styles.css'
 
 function HandArrow({ className = '' }) {
@@ -71,7 +71,7 @@ function App() {
             onClick={() => setInterest('Dienstleistung')}
           />
           <OfferCard
-            icon={WandSparkles}
+            icon={Sparkles}
             title="SaaS-Applikation"
             description="Sie bearbeiten Immobilienbilder selbstständig mit unserer SaaS-Lösung."
             steps={['Kontakt aufnehmen', 'Persönliche Beratung', 'Selbstständig bearbeiten']}

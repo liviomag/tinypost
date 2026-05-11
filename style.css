@@ -106,9 +106,19 @@ h1 {
   stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 260;
-  stroke-dashoffset: 260;
-  animation: drawIn 2.5s ease forwards;
+}
+
+.draw-line--curve {
+  stroke-dasharray: 380;
+  stroke-dashoffset: 380;
+  animation: drawIn 2.4s ease forwards;
+}
+
+.draw-line--head {
+  stroke-dasharray: 54;
+  stroke-dashoffset: 54;
+  animation: drawIn 0.55s ease forwards;
+  animation-delay: 2.15s;
 }
 
 @keyframes drawIn {

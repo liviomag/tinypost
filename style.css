@@ -423,7 +423,7 @@ input[type="tel"] {
   border-radius: 16px;
   display: block;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   background: #f5f6f7;
   border: 1px solid var(--line);

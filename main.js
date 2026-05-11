@@ -17,16 +17,32 @@ offerButtons.forEach((button) => {
   });
 });
 
-// Lead-Formular: clientseitige Validierung + Erfolgsmeldung ohne Backend.
+// Lead-Formular: clientseitige Validierung + Webhook-Übertragung.
 const leadForm = document.getElementById('leadForm');
 const messageEl = document.getElementById('formMessage');
 
-leadForm.addEventListener('submit', (event) => {
+async function getWebhookUrl() {
+  const response = await fetch('webhook-config.json', { cache: 'no-store' });
+
+  if (!response.ok) {
+    throw new Error('Webhook-Konfiguration konnte nicht geladen werden.');
+  }
+
+  const config = await response.json();
+  if (!config.webhookUrl || typeof config.webhookUrl !== 'string') {
+    throw new Error('Webhook-URL fehlt in der Konfiguration.');
+  }
+
+  return config.webhookUrl;
+}
+
+leadForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const selectedOffer = leadForm.querySelector('input[name="angebot"]:checked');
   const firstName = document.getElementById('firstName');
   const email = document.getElementById('email');
+  const phone = document.getElementById('phone');
 
   if (!selectedOffer || !firstName.value.trim() || !email.value.trim()) {
     messageEl.textContent = 'Bitte füllen Sie alle Felder aus.';
@@ -40,10 +56,32 @@ leadForm.addEventListener('submit', (event) => {
     return;
   }
 
-  messageEl.textContent = 'Vielen Dank. Wir melden uns zeitnah bei Ihnen.';
-  messageEl.className = 'form-message success';
+  const payload = {
+    firstName: firstName.value.trim(),
+    email: email.value.trim(),
+    phone: phone.value.trim(),
+    interestedIn: selectedOffer.value
+  };
 
-  leadForm.reset();
+  try {
+    const webhookUrl = await getWebhookUrl();
+    const webhookResponse = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!webhookResponse.ok) {
+      throw new Error('Webhook konnte nicht versendet werden.');
+    }
+
+    messageEl.textContent = 'Vielen Dank. Wir melden uns zeitnah bei Ihnen.';
+    messageEl.className = 'form-message success';
+    leadForm.reset();
+  } catch (error) {
+    messageEl.textContent = 'Fehler beim Senden. Bitte später erneut versuchen.';
+    messageEl.className = 'form-message error';
+  }
 });
 
 // Dezente Scroll-Reveal-Animation per IntersectionObserver.

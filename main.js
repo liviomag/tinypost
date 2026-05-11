@@ -17,23 +17,94 @@ offerButtons.forEach((button) => {
   });
 });
 
+const scrollButtons = document.querySelectorAll('.js-scroll-target');
+
+scrollButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const targetId = button.dataset.target;
+    const targetEl = document.getElementById(targetId);
+    if (!targetEl) return;
+    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
 // Lead-Formular: clientseitige Validierung + Webhook-Übertragung.
 const leadForm = document.getElementById('leadForm');
 const messageEl = document.getElementById('formMessage');
 
-async function getWebhookUrl() {
-  const response = await fetch('webhook-config.json', { cache: 'no-store' });
+let runtimeConfigPromise;
 
-  if (!response.ok) {
-    throw new Error('Webhook-Konfiguration konnte nicht geladen werden.');
+async function getRuntimeConfig() {
+  if (!runtimeConfigPromise) {
+    runtimeConfigPromise = fetch('webhook-config.json', { cache: 'no-store' }).then(async (response) => {
+      if (!response.ok) {
+        throw new Error('Konfiguration konnte nicht geladen werden.');
+      }
+
+      return response.json();
+    });
   }
 
-  const config = await response.json();
+  return runtimeConfigPromise;
+}
+
+async function getWebhookUrl() {
+  const config = await getRuntimeConfig();
+
   if (!config.webhookUrl || typeof config.webhookUrl !== 'string') {
     throw new Error('Webhook-URL fehlt in der Konfiguration.');
   }
 
   return config.webhookUrl;
+}
+
+const proofImageFields = {
+  furniture: {
+    before: document.getElementById('proof-furniture-before'),
+    after: document.getElementById('proof-furniture-after')
+  },
+  rendering: {
+    before: document.getElementById('proof-render-before'),
+    after: document.getElementById('proof-render-after')
+  },
+  volumeModel: {
+    before: document.getElementById('proof-volume-before'),
+    after: document.getElementById('proof-volume-after')
+  }
+};
+
+function applyProofImage(targetEl, imageUrl, fallbackLabel) {
+  if (!targetEl) return;
+  if (imageUrl && typeof imageUrl === 'string') {
+    targetEl.src = imageUrl;
+    return;
+  }
+
+  const label = encodeURIComponent(fallbackLabel);
+  targetEl.src = `https://placehold.co/640x420/eceff1/1b2024?text=${label}`;
+}
+
+async function applyProofImagesFromConfig() {
+  try {
+    const config = await getRuntimeConfig();
+    const proofImages = config.proofImages || {};
+
+    applyProofImage(proofImageFields.furniture.before, proofImages.furniture?.before, 'Vorher');
+    applyProofImage(proofImageFields.furniture.after, proofImages.furniture?.after, 'Nachher');
+
+    applyProofImage(proofImageFields.rendering.before, proofImages.rendering?.before, 'Vorher');
+    applyProofImage(proofImageFields.rendering.after, proofImages.rendering?.after, 'Nachher');
+
+    applyProofImage(proofImageFields.volumeModel.before, proofImages.volumeModel?.before, 'Vorher');
+    applyProofImage(proofImageFields.volumeModel.after, proofImages.volumeModel?.after, 'Nachher');
+  } catch (error) {
+    applyProofImage(proofImageFields.furniture.before, '', 'Vorher');
+    applyProofImage(proofImageFields.furniture.after, '', 'Nachher');
+    applyProofImage(proofImageFields.rendering.before, '', 'Vorher');
+    applyProofImage(proofImageFields.rendering.after, '', 'Nachher');
+    applyProofImage(proofImageFields.volumeModel.before, '', 'Vorher');
+    applyProofImage(proofImageFields.volumeModel.after, '', 'Nachher');
+  }
 }
 
 leadForm.addEventListener('submit', async (event) => {
@@ -142,3 +213,4 @@ heroLogoUpload?.addEventListener("change", (event) => {
 });
 
 applyStoredBranding();
+applyProofImagesFromConfig();

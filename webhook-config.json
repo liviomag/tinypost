@@ -14,5 +14,9 @@
       "after": ""
     }
   },
-  "convinceButtonUrl": "https://forms.gle/bpZWvEsMpmtw3ATi6"
+  "convinceButtonUrl": "https://forms.gle/bpZWvEsMpmtw3ATi6",
+  "proofVideos": {
+    "rendering": "",
+    "volumeModel": ""
+  }
 }

@@ -151,17 +151,18 @@ h1 {
 
 
 .offer-card--saas {
+  background: var(--bg);
   border-color: var(--accent);
 }
 
 .btn--service-highlight {
-  background: #fff;
+  background: var(--bg);
   color: var(--primary-dark);
   border-color: var(--primary-dark);
 }
 
 .btn--saas-outline {
-  background: #fff;
+  background: var(--bg);
   border-color: var(--accent);
   color: var(--primary-dark);
 }

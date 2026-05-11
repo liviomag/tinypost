@@ -414,10 +414,13 @@ input[type="tel"] {
 }
 
 .proof-images {
-  position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.7rem;
+}
+
+.proof-after-wrap {
+  position: relative;
 }
 
 .proof-image {
@@ -452,8 +455,24 @@ input[type="tel"] {
 
 
 .btn--video {
-  white-space: nowrap;
-  padding: 0.45rem 0.9rem;
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 0, 0, 0.92);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.play-icon {
+  width: 0;
+  height: 0;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  border-left: 18px solid #fff;
+  margin-left: 3px;
 }
 
 .proof-video-button {
@@ -462,6 +481,19 @@ input[type="tel"] {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 2;
+}
+
+.proof-video-button:hover,
+.proof-video-button:focus-visible {
+  background: #ff0000;
+}
+
+@media (max-width: 640px) {
+  .btn--video {
+    width: 54px;
+    height: 54px;
+    min-width: 54px;
+  }
 }
 
 .video-modal {

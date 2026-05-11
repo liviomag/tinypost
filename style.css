@@ -401,3 +401,58 @@ input[type="tel"] {
   font: inherit;
   background: #fff;
 }
+
+.proof-grid {
+  margin-top: 1.6rem;
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.proof-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(16, 20, 23, 0.08);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.2rem;
+}
+
+.proof-card h3 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.proof-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.proof-image {
+  border-radius: 12px;
+  min-height: 130px;
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.proof-image--before {
+  background: #eceff1;
+}
+
+.proof-image--after {
+  background: linear-gradient(135deg, rgba(184, 115, 51, 0.14), #f6eee6);
+}
+
+.proof-cta {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 980px) {
+  .proof-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,3 +1,17 @@
 {
-  "webhookUrl": "https://n8n.srv1019917.hstgr.cloud/webhook-test/fa76dd54-da87-477a-a8a2-b409043c2d38"
+  "webhookUrl": "https://n8n.srv1019917.hstgr.cloud/webhook-test/fa76dd54-da87-477a-a8a2-b409043c2d38",
+  "proofImages": {
+    "furniture": {
+      "before": "",
+      "after": ""
+    },
+    "rendering": {
+      "before": "",
+      "after": ""
+    },
+    "volumeModel": {
+      "before": "",
+      "after": ""
+    }
+  }
 }

@@ -41,6 +41,88 @@ async function getWebhookUrl() {
 
 const convinceButton = document.getElementById('convinceButton');
 
+const videoButtons = document.querySelectorAll('[data-video-target]');
+const videoModal = document.getElementById('videoModal');
+const closeVideoModalButton = document.getElementById('closeVideoModal');
+const proofVideo = document.getElementById('proofVideo');
+let proofVideosConfig = {};
+
+function resolveProofVideoUrl(videoUrl) {
+  if (!videoUrl || typeof videoUrl !== 'string') return '';
+
+  const trimmedUrl = videoUrl.trim();
+  if (!trimmedUrl) return '';
+
+  if (/^(https?:)?\/\//i.test(trimmedUrl) || trimmedUrl.startsWith('data:')) {
+    return trimmedUrl;
+  }
+
+  if (trimmedUrl.startsWith('assets/')) {
+    return trimmedUrl;
+  }
+
+  return `assets/${trimmedUrl}`;
+}
+
+function closeVideoModal() {
+  if (!videoModal || !proofVideo) return;
+
+  proofVideo.pause();
+  proofVideo.removeAttribute('src');
+  proofVideo.load();
+  videoModal.classList.remove('is-open');
+  videoModal.setAttribute('aria-hidden', 'true');
+}
+
+function openVideoModal(videoUrl) {
+  if (!videoModal || !proofVideo) return;
+
+  proofVideo.src = videoUrl;
+  videoModal.classList.add('is-open');
+  videoModal.setAttribute('aria-hidden', 'false');
+  proofVideo.play().catch(() => {
+    // Autoplay kann je nach Browser blockiert sein.
+  });
+}
+
+async function applyProofVideosFromConfig() {
+  try {
+    const config = await getRuntimeConfig();
+    proofVideosConfig = config.proofVideos || {};
+  } catch (error) {
+    proofVideosConfig = {};
+  }
+}
+
+videoButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const targetKey = button.dataset.videoTarget;
+    const rawVideoUrl = proofVideosConfig[targetKey];
+    const videoUrl = resolveProofVideoUrl(rawVideoUrl);
+
+    if (!videoUrl) {
+      alert('Kein Video hinterlegt. Bitte proofVideos im webhook-config.json setzen.');
+      return;
+    }
+
+    openVideoModal(videoUrl);
+  });
+});
+
+closeVideoModalButton?.addEventListener('click', closeVideoModal);
+videoModal?.addEventListener('click', (event) => {
+  if (event.target === videoModal) {
+    closeVideoModal();
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && videoModal?.classList.contains('is-open')) {
+    closeVideoModal();
+  }
+});
+
+
 function resolveExternalLink(linkUrl) {
   if (!linkUrl || typeof linkUrl !== 'string') return '';
 
@@ -247,4 +329,5 @@ heroLogoUpload?.addEventListener("change", (event) => {
 
 applyStoredBranding();
 applyProofImagesFromConfig();
+applyProofVideosFromConfig();
 applyConvinceButtonLink();

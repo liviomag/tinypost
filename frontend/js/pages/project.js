@@ -18,8 +18,8 @@ const addScheduleItemButton = document.querySelector('[data-add-schedule-item]')
 const addResourceItemButton = document.querySelector('[data-add-resource-item]');
 const colorField = document.querySelector('[data-color-field]');
 const resourceField = document.querySelector('[data-resource-field]');
-const resourceSearchInput = document.querySelector('[data-resource-search]');
-const resourceSuggestions = document.querySelector('[data-resource-suggestions]');
+const resourceSelect = document.querySelector('[data-resource-select]');
+const addSelectedResourceButton = document.querySelector('[data-add-selected-resource]');
 const resourceSelected = document.querySelector('[data-resource-selected]');
 const cancelScheduleItemButton = document.querySelector('[data-cancel-schedule-item]');
 const removeScheduleItemButton = document.querySelector('[data-remove-schedule-item]');
@@ -27,6 +27,13 @@ const ganttPrevButton = document.querySelector('[data-gantt-prev]');
 const ganttNextButton = document.querySelector('[data-gantt-next]');
 const ganttRange = document.querySelector('[data-gantt-range]');
 const ganttGrid = document.querySelector('[data-gantt-grid]');
+
+const teamStatus = document.querySelector('[data-team-status]');
+const teamTableBody = document.querySelector('[data-team-table-body]');
+const addTeamMemberButton = document.querySelector('[data-add-team-member]');
+const teamDialog = document.querySelector('[data-team-dialog]');
+const teamForm = document.querySelector('[data-team-form]');
+const cancelTeamMemberButton = document.querySelector('[data-cancel-team-member]');
 
 let supabase = null;
 let scheduleItems = [];
@@ -43,13 +50,45 @@ if (!projectId) {
   subtitle.textContent = 'Keine Projekt-ID übergeben.';
 } else {
   supabase = await getSupabaseClient();
-  await Promise.all([loadProject(), loadScheduleItems(), loadResources()]);
+  await Promise.all([loadProject(), loadScheduleItems(), loadTeamMembers()]);
 }
 
 addScheduleItemButton?.addEventListener('click', () => openScheduleDialog(null, false));
 addResourceItemButton?.addEventListener('click', () => openScheduleDialog(null, true));
 cancelScheduleItemButton?.addEventListener('click', closeScheduleDialog);
-resourceSearchInput?.addEventListener('input', renderResourceSuggestions);
+addSelectedResourceButton?.addEventListener('click', addSelectedResource);
+addTeamMemberButton?.addEventListener('click', () => teamDialog?.showModal());
+cancelTeamMemberButton?.addEventListener('click', () => teamDialog?.close());
+
+teamForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const formData = new FormData(teamForm);
+  const firstName = String(formData.get('firstName') || '').trim();
+  const lastName = String(formData.get('lastName') || '').trim();
+  const role = String(formData.get('role') || '').trim();
+
+  if (!firstName || !lastName || !role) {
+    teamStatus.textContent = 'Bitte alle Felder ausfüllen.';
+    return;
+  }
+
+  const { error } = await supabase.from('project_team_members').insert({
+    project_id: projectId,
+    first_name: firstName,
+    last_name: lastName,
+    role,
+  });
+
+  if (error) {
+    teamStatus.textContent = `Fehler beim Hinzufügen: ${error.message}`;
+    return;
+  }
+
+  teamStatus.textContent = 'Teammitglied hinzugefügt.';
+  teamForm.reset();
+  teamDialog?.close();
+  await loadTeamMembers();
+});
 
 scheduleForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -128,9 +167,39 @@ async function loadProject() {
   title.textContent = data.projektname;
   subtitle.textContent = `Kommissionsnummer ${data.kommissionsnummer} · Erstellt am ${new Date(data.created_at).toLocaleDateString('de-DE')}`;
 }
-async function loadResources() {
-  const { data } = await supabase.from('profiles').select('id, first_name, last_name, email').order('first_name', { ascending: true });
+async function loadTeamMembers() {
+  teamStatus.textContent = 'Lade Team ...';
+  const { data, error } = await supabase.from('project_team_members').select('id, first_name, last_name, role').eq('project_id', projectId).order('first_name', { ascending: true });
+  if (error) {
+    teamStatus.textContent = `Fehler beim Laden: ${error.message}`;
+    return;
+  }
   availableResources = data || [];
+  renderTeamTable();
+  renderResourceOptions();
+  teamStatus.textContent = availableResources.length ? `${availableResources.length} Teammitglieder geladen.` : 'Noch keine Teammitglieder vorhanden.';
+}
+function renderTeamTable() {
+  if (!teamTableBody) return;
+  if (!availableResources.length) {
+    teamTableBody.innerHTML = '<tr><td colspan="3" class="table-empty">Noch keine Teammitglieder vorhanden.</td></tr>';
+    return;
+  }
+  teamTableBody.innerHTML = availableResources.map((member) => `<tr><td>${escapeHtml(member.first_name || '')}</td><td>${escapeHtml(member.last_name || '')}</td><td>${escapeHtml(member.role || '')}</td></tr>`).join('');
+}
+function renderResourceOptions() {
+  if (!resourceSelect) return;
+  const remaining = availableResources.filter((member) => !selectedResources.some((selected) => selected.uid === member.id));
+  resourceSelect.innerHTML = ['<option value="">Person auswählen</option>', ...remaining.map((member) => `<option value="${member.id}">${escapeHtml(`${member.first_name || ''} ${member.last_name || ''}`.trim() || 'Ohne Namen')}</option>`)].join('');
+}
+function addSelectedResource() {
+  const resourceId = resourceSelect?.value;
+  if (!resourceId) return;
+  const member = availableResources.find((entry) => entry.id === resourceId);
+  if (!member) return;
+  selectedResources.push({ uid: member.id, first_name: member.first_name || '', last_name: member.last_name || '', role: member.role || '' });
+  renderSelectedResources();
+  renderResourceOptions();
 }
 async function loadScheduleItems() {
   scheduleStatus.textContent = 'Lade Ablauf-Einträge ...';
@@ -189,39 +258,19 @@ function openScheduleDialog(item = null, forceResource = null) {
     scheduleForm.elements.color.value = '#D6E2E9';
   }
   renderSelectedResources();
-  renderResourceSuggestions();
+  renderResourceOptions();
   scheduleDialog?.showModal();
 }
-function renderResourceSuggestions() {
-  if (!resourceSuggestions || !isResourceMode) return;
-  const query = String(resourceSearchInput?.value || '').trim().toLowerCase();
-  const matches = query.length < 1 ? [] : availableResources.filter((profile) => {
-    const email = String(profile.email || '').toLowerCase();
-    return email.includes(query);
-  }).filter((profile) => !selectedResources.some((selected) => selected.uid === profile.id)).slice(0, 6);
-  resourceSuggestions.innerHTML = matches.map((profile) => {
-    const email = String(profile.email || '').trim();
-    const label = email || 'Keine E-Mail hinterlegt';
-    return `<button type="button" class="resource-suggestion" data-resource-id="${profile.id}">${escapeHtml(label)}</button>`;
-  }).join('');
-  Array.from(resourceSuggestions.querySelectorAll('[data-resource-id]')).forEach((button) => button.addEventListener('click', () => {
-    const profile = availableResources.find((entry) => entry.id === button.getAttribute('data-resource-id'));
-    if (!profile) return;
-    selectedResources.push({ uid: profile.id, first_name: profile.first_name || '', last_name: profile.last_name || '', email: profile.email || '' });
-    resourceSearchInput.value = '';
-    renderSelectedResources();
-    renderResourceSuggestions();
-  }));
-}
+
 function renderSelectedResources() {
   resourceSelected.innerHTML = selectedResources.map((entry) => {
-    const label = String(entry.email || '').trim() || `${entry.first_name || ''} ${entry.last_name || ''}`.trim() || 'Keine E-Mail hinterlegt';
+    const label = `${entry.first_name || ''} ${entry.last_name || ''}`.trim() || 'Ohne Namen';
     return `<span class="resource-chip">${escapeHtml(label)}<button type="button" data-remove-resource="${entry.uid}">×</button></span>`;
   }).join('');
   Array.from(resourceSelected.querySelectorAll('[data-remove-resource]')).forEach((button) => button.addEventListener('click', () => {
     selectedResources = selectedResources.filter((entry) => entry.uid !== button.getAttribute('data-remove-resource'));
     renderSelectedResources();
-    renderResourceSuggestions();
+    renderResourceOptions();
   }));
 }
 function closeScheduleDialog() { editingItemId = null; isResourceMode = false; selectedResources = []; scheduleForm?.reset(); scheduleDialog?.close(); }

@@ -42,6 +42,7 @@ let selectedResources = [];
 let visibleStartDate = getStartOfIsoWeek(addDays(new Date(), -7));
 let editingItemId = null;
 let isResourceMode = false;
+const GANTT_WINDOW_DAYS = 35;
 
 await requireAuth();
 initNavigation();
@@ -148,11 +149,11 @@ removeScheduleItemButton?.addEventListener('click', async () => {
 });
 
 ganttPrevButton?.addEventListener('click', () => {
-  visibleStartDate = addDays(visibleStartDate, -35);
+  visibleStartDate = addDays(visibleStartDate, -GANTT_WINDOW_DAYS);
   renderGantt();
 });
 ganttNextButton?.addEventListener('click', () => {
-  visibleStartDate = addDays(visibleStartDate, 35);
+  visibleStartDate = addDays(visibleStartDate, GANTT_WINDOW_DAYS);
   renderGantt();
 });
 
@@ -214,13 +215,20 @@ async function loadScheduleItems() {
   renderGantt();
 }
 function renderGantt() {
-  const visibleEndDate = addDays(visibleStartDate, 34);
+  const visibleEndDate = addDays(visibleStartDate, GANTT_WINDOW_DAYS - 1);
   const weeks = Array.from({ length: 5 }).map((_, week) => ({ label: `KW ${getIsoWeekNumber(addDays(visibleStartDate, week * 7))}`, start: addDays(visibleStartDate, week * 7) }));
   ganttRange.textContent = `${formatDate(visibleStartDate)} – ${formatDate(visibleEndDate)}`;
   const headerCells = weeks.map((week) => `<div class="gantt-week-header" style="grid-column: span 7;">${week.label}<span>${formatDate(week.start)}</span></div>`).join('');
-  const dayCells = Array.from({ length: 35 }).map((_, index) => `<div class="gantt-day-cell">${getWeekdayLabel(addDays(visibleStartDate, index))}</div>`).join('');
+  const dayCells = Array.from({ length: GANTT_WINDOW_DAYS }).map((_, index) => `<div class="gantt-day-cell">${getWeekdayLabel(addDays(visibleStartDate, index))}</div>`).join('');
 
-  const rows = scheduleItems.filter((item) => parseDateString(item.end_date) >= visibleStartDate && parseDateString(item.start_date) <= visibleEndDate).map((item) => {
+  const visibleItems = scheduleItems
+    .filter((item) => parseDateString(item.end_date) >= visibleStartDate && parseDateString(item.start_date) <= visibleEndDate)
+    .sort((a, b) => {
+      if (Boolean(a.resources) !== Boolean(b.resources)) return a.resources ? -1 : 1;
+      return parseDateString(a.start_date) - parseDateString(b.start_date);
+    });
+
+  const rows = visibleItems.map((item) => {
     const itemStart = parseDateString(item.start_date);
     const itemEnd = parseDateString(item.end_date);
     const clampedStart = itemStart < visibleStartDate ? visibleStartDate : itemStart;
@@ -229,12 +237,98 @@ function renderGantt() {
     const spanDays = diffInDays(visibleStartDate, clampedEnd) - startOffsetDays + 1;
     const resourceText = item.resources ? (item.resource_assignments || []).map((entry) => `${entry.first_name || ''} ${entry.last_name || ''}`.trim()).filter(Boolean).join(', ') : '';
     const barColor = item.resources ? '#111111' : item.color || '#D6E2E9';
-    return `<div class="gantt-row"><div class="gantt-row-title">${escapeHtml(item.title)}${resourceText ? `<span class="gantt-resource-label">${escapeHtml(resourceText)}</span>` : ''}</div><div class="gantt-row-track"><button type="button" class="gantt-row-bar${item.resources ? ' is-resource-bar' : ''}" data-edit-item="${item.id}" style="left: calc(${startOffsetDays} * (100% / 35)); width: calc(${spanDays} * (100% / 35)); background: ${escapeHtml(barColor)};" aria-label="Eintrag ${escapeHtml(item.title)} bearbeiten"></button></div></div>`;
+    const resizeHandles = item.resources
+      ? `<span class="gantt-resize-handle is-left" data-resize-item="${item.id}" data-resize-edge="left" aria-hidden="true"></span><span class="gantt-resize-handle is-right" data-resize-item="${item.id}" data-resize-edge="right" aria-hidden="true"></span>`
+      : '';
+
+    return `<div class="gantt-row"><div class="gantt-row-title">${escapeHtml(item.title)}${resourceText ? `<span class="gantt-resource-label">${escapeHtml(resourceText)}</span>` : ''}</div><div class="gantt-row-track"><button type="button" class="gantt-row-bar${item.resources ? ' is-resource-bar is-draggable-resource' : ''}" data-edit-item="${item.id}" data-item-id="${item.id}" style="left: calc(${startOffsetDays} * (100% / ${GANTT_WINDOW_DAYS})); width: calc(${spanDays} * (100% / ${GANTT_WINDOW_DAYS})); background: ${escapeHtml(barColor)};" aria-label="Eintrag ${escapeHtml(item.title)} bearbeiten">${resizeHandles}</button></div></div>`;
   }).join('');
 
   ganttGrid.innerHTML = `<div class="gantt-timeline"><div class="gantt-grid-head">${headerCells}</div><div class="gantt-grid-days">${dayCells}</div></div><div class="gantt-rows">${rows || '<p class="table-empty">Keine Einträge im sichtbaren Zeitraum.</p>'}</div>`;
-  Array.from(ganttGrid.querySelectorAll('[data-edit-item]')).forEach((button) => button.addEventListener('click', () => openScheduleDialog(scheduleItems.find((entry) => entry.id === button.getAttribute('data-edit-item')) || null)));
+
+  Array.from(ganttGrid.querySelectorAll('[data-edit-item]')).forEach((button) => {
+    const item = scheduleItems.find((entry) => entry.id === button.getAttribute('data-edit-item'));
+    if (!item) return;
+    button.addEventListener('click', () => openScheduleDialog(item || null));
+    if (item.resources) {
+      button.addEventListener('pointerdown', (event) => startResourceDrag(event, item));
+    }
+  });
+  attachResizeHandleEvents();
 }
+
+function startResourceDrag(event, item) {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest('[data-resize-item]')) return;
+  if (event.button !== 0) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const bar = event.currentTarget;
+  if (!(bar instanceof HTMLElement)) return;
+  const track = bar.parentElement;
+  if (!(track instanceof HTMLElement)) return;
+
+  const startDate = parseDateString(item.start_date);
+  const endDate = parseDateString(item.end_date);
+  const duration = diffInDays(startDate, endDate);
+  const startX = event.clientX;
+  const startIndex = diffInDays(visibleStartDate, startDate);
+
+  const onMove = (moveEvent) => {
+    const deltaDays = pixelDeltaToDays(moveEvent.clientX - startX, track);
+    const nextStartIndex = startIndex + deltaDays;
+    const nextEndIndex = nextStartIndex + duration;
+    updateBarPreview(bar, nextStartIndex, nextEndIndex);
+  };
+
+  const onUp = async (upEvent) => {
+    cleanup();
+    const deltaDays = pixelDeltaToDays(upEvent.clientX - startX, track);
+    if (!deltaDays) return;
+    await persistResourceDates(item, addDays(startDate, deltaDays), addDays(endDate, deltaDays));
+  };
+
+  const cleanup = () => {
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', cleanup);
+  };
+
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', cleanup);
+}
+
+function pixelDeltaToDays(pixelDelta, trackElement) {
+  const dayWidth = trackElement.clientWidth / GANTT_WINDOW_DAYS;
+  if (!dayWidth) return 0;
+  return Math.round(pixelDelta / dayWidth);
+}
+
+function updateBarPreview(bar, startIndex, endIndex) {
+  const clampedStart = Math.max(-2, startIndex);
+  const clampedEnd = Math.min(GANTT_WINDOW_DAYS + 1, endIndex);
+  const span = clampedEnd - clampedStart + 1;
+  bar.style.left = `calc(${clampedStart} * (100% / ${GANTT_WINDOW_DAYS}))`;
+  bar.style.width = `calc(${Math.max(1, span)} * (100% / ${GANTT_WINDOW_DAYS}))`;
+}
+
+async function persistResourceDates(item, nextStartDate, nextEndDate) {
+  const payload = {
+    start_date: toDateString(nextStartDate),
+    end_date: toDateString(nextEndDate),
+  };
+  const { error } = await supabase.from('project_schedule_items').update(payload).eq('id', item.id).eq('project_id', projectId).eq('resources', true);
+  if (error) {
+    scheduleStatus.textContent = `Fehler beim Verschieben: ${error.message}`;
+    renderGantt();
+    return;
+  }
+  scheduleStatus.textContent = `Ressource „${item.title}“ wurde verschoben.`;
+  await loadScheduleItems();
+}
+
 function openScheduleDialog(item = null, forceResource = null) {
   editingItemId = item?.id || null;
   isResourceMode = forceResource === null ? Boolean(item?.resources) : forceResource;
@@ -273,6 +367,70 @@ function renderSelectedResources() {
     renderResourceOptions();
   }));
 }
+function attachResizeHandleEvents() {
+  Array.from(ganttGrid.querySelectorAll('[data-resize-item]')).forEach((handle) => {
+    handle.addEventListener('pointerdown', (event) => startResourceResize(event));
+  });
+}
+
+function startResourceResize(event) {
+  if (event.button !== 0) return;
+  event.preventDefault();
+  event.stopPropagation();
+
+  const handle = event.currentTarget;
+  if (!(handle instanceof HTMLElement)) return;
+  const itemId = handle.getAttribute('data-resize-item');
+  const edge = handle.getAttribute('data-resize-edge');
+  const item = scheduleItems.find((entry) => entry.id === itemId && entry.resources);
+  if (!item || !edge) return;
+
+  const bar = handle.closest('.gantt-row-bar');
+  const track = bar?.parentElement;
+  if (!(bar instanceof HTMLElement) || !(track instanceof HTMLElement)) return;
+
+  const startDate = parseDateString(item.start_date);
+  const endDate = parseDateString(item.end_date);
+  const startX = event.clientX;
+
+  const onMove = (moveEvent) => {
+    const deltaDays = pixelDeltaToDays(moveEvent.clientX - startX, track);
+    let nextStartIndex = diffInDays(visibleStartDate, startDate);
+    let nextEndIndex = diffInDays(visibleStartDate, endDate);
+    if (edge === 'left') nextStartIndex += deltaDays;
+    if (edge === 'right') nextEndIndex += deltaDays;
+    if (nextEndIndex < nextStartIndex) return;
+    updateBarPreview(bar, nextStartIndex, nextEndIndex);
+  };
+
+  const onUp = async (upEvent) => {
+    cleanup();
+    const deltaDays = pixelDeltaToDays(upEvent.clientX - startX, track);
+    if (!deltaDays) return;
+    const nextStartDate = edge === 'left' ? addDays(startDate, deltaDays) : startDate;
+    const nextEndDate = edge === 'right' ? addDays(endDate, deltaDays) : endDate;
+    if (nextEndDate < nextStartDate) return renderGantt();
+    await persistResourceDates(item, nextStartDate, nextEndDate);
+  };
+
+  const cleanup = () => {
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', cleanup);
+  };
+
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', cleanup);
+}
+
+function toDateString(date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function closeScheduleDialog() { editingItemId = null; isResourceMode = false; selectedResources = []; scheduleForm?.reset(); scheduleDialog?.close(); }
 function parseDateString(value) { return new Date(`${value}T00:00:00`); }
 function getWeekdayLabel(date) { return ['SO', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA'][date.getDay()] || ''; }

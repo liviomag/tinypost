@@ -17,6 +17,7 @@ const scheduleSubmitButton = document.querySelector('[data-schedule-submit]');
 const addScheduleItemButton = document.querySelector('[data-add-schedule-item]');
 const addResourceItemButton = document.querySelector('[data-add-resource-item]');
 const colorField = document.querySelector('[data-color-field]');
+const titleField = document.querySelector('[data-title-field]');
 const resourceField = document.querySelector('[data-resource-field]');
 const resourceSelect = document.querySelector('[data-resource-select]');
 const addSelectedResourceButton = document.querySelector('[data-add-selected-resource]');
@@ -34,6 +35,9 @@ const addTeamMemberButton = document.querySelector('[data-add-team-member]');
 const teamDialog = document.querySelector('[data-team-dialog]');
 const teamForm = document.querySelector('[data-team-form]');
 const cancelTeamMemberButton = document.querySelector('[data-cancel-team-member]');
+const teamDialogTitle = document.querySelector('[data-team-dialog-title]');
+const teamSubmitButton = document.querySelector('[data-team-submit]');
+const deleteTeamMemberButton = document.querySelector('[data-delete-team-member]');
 
 let supabase = null;
 let scheduleItems = [];
@@ -58,8 +62,8 @@ addScheduleItemButton?.addEventListener('click', () => openScheduleDialog(null, 
 addResourceItemButton?.addEventListener('click', () => openScheduleDialog(null, true));
 cancelScheduleItemButton?.addEventListener('click', closeScheduleDialog);
 addSelectedResourceButton?.addEventListener('click', addSelectedResource);
-addTeamMemberButton?.addEventListener('click', () => teamDialog?.showModal());
-cancelTeamMemberButton?.addEventListener('click', () => teamDialog?.close());
+addTeamMemberButton?.addEventListener('click', () => openTeamDialog(null));
+cancelTeamMemberButton?.addEventListener('click', closeTeamDialog);
 
 teamForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -67,27 +71,43 @@ teamForm?.addEventListener('submit', async (event) => {
   const firstName = String(formData.get('firstName') || '').trim();
   const lastName = String(formData.get('lastName') || '').trim();
   const role = String(formData.get('role') || '').trim();
+  const regieansatz = String(formData.get('regieansatz') || '').trim();
+  const sollerloes = String(formData.get('sollerloes') || '').trim();
+  const regieNummer = String(formData.get('regieNummer') || '').trim();
+  const memberId = String(formData.get('memberId') || '').trim();
 
   if (!firstName || !lastName || !role) {
     teamStatus.textContent = 'Bitte alle Felder ausfüllen.';
     return;
   }
 
-  const { error } = await supabase.from('project_team_members').insert({
-    project_id: projectId,
-    first_name: firstName,
-    last_name: lastName,
-    role,
-  });
+  const payload = { project_id: projectId, first_name: firstName, last_name: lastName, role, regieansatz, sollerloes, regie_nummer: regieNummer };
+  const operation = memberId
+    ? supabase.from('project_team_members').update(payload).eq('id', memberId).eq('project_id', projectId)
+    : supabase.from('project_team_members').insert(payload);
+  const { error } = await operation;
 
   if (error) {
     teamStatus.textContent = `Fehler beim Hinzufügen: ${error.message}`;
     return;
   }
 
-  teamStatus.textContent = 'Teammitglied hinzugefügt.';
-  teamForm.reset();
-  teamDialog?.close();
+  teamStatus.textContent = memberId ? 'Teammitglied aktualisiert.' : 'Teammitglied hinzugefügt.';
+  closeTeamDialog();
+  await loadTeamMembers();
+});
+
+deleteTeamMemberButton?.addEventListener('click', async () => {
+  const memberId = String(teamForm?.elements.memberId?.value || '').trim();
+  if (!memberId) return;
+  if (!window.confirm('Möchtest du diese Person wirklich löschen?')) return;
+  const { error } = await supabase.from('project_team_members').delete().eq('id', memberId).eq('project_id', projectId);
+  if (error) {
+    teamStatus.textContent = `Fehler beim Löschen: ${error.message}`;
+    return;
+  }
+  teamStatus.textContent = 'Teammitglied gelöscht.';
+  closeTeamDialog();
   await loadTeamMembers();
 });
 
@@ -99,7 +119,7 @@ scheduleForm?.addEventListener('submit', async (event) => {
   const endDate = String(formData.get('endDate') || '');
   const colorValue = String(formData.get('color') || '');
 
-  if (!titleValue || !startDate || !endDate || (!isResourceMode && !colorValue)) {
+  if ((!isResourceMode && !titleValue) || !startDate || !endDate || (!isResourceMode && !colorValue)) {
     scheduleStatus.textContent = 'Bitte alle Felder ausfüllen.';
     return;
   }
@@ -112,8 +132,9 @@ scheduleForm?.addEventListener('submit', async (event) => {
     return;
   }
 
+  const resourceTitle = selectedResources.map((entry) => `${entry.first_name || ''} ${entry.last_name || ''}`.trim()).filter(Boolean).join(', ');
   const payload = {
-    title: titleValue,
+    title: isResourceMode ? (editingItemId ? (scheduleItems.find((entry) => entry.id === editingItemId)?.title || resourceTitle || 'Ressource') : (resourceTitle || 'Ressource')) : titleValue,
     start_date: startDate,
     end_date: endDate,
     resources: isResourceMode,
@@ -170,7 +191,7 @@ async function loadProject() {
 }
 async function loadTeamMembers() {
   teamStatus.textContent = 'Lade Team ...';
-  const { data, error } = await supabase.from('project_team_members').select('id, first_name, last_name, role').eq('project_id', projectId).order('first_name', { ascending: true });
+  const { data, error } = await supabase.from('project_team_members').select('id, first_name, last_name, role, regieansatz, sollerloes, regie_nummer').eq('project_id', projectId).order('first_name', { ascending: true });
   if (error) {
     teamStatus.textContent = `Fehler beim Laden: ${error.message}`;
     return;
@@ -183,10 +204,14 @@ async function loadTeamMembers() {
 function renderTeamTable() {
   if (!teamTableBody) return;
   if (!availableResources.length) {
-    teamTableBody.innerHTML = '<tr><td colspan="3" class="table-empty">Noch keine Teammitglieder vorhanden.</td></tr>';
+    teamTableBody.innerHTML = '<tr><td colspan="7" class="table-empty">Noch keine Teammitglieder vorhanden.</td></tr>';
     return;
   }
-  teamTableBody.innerHTML = availableResources.map((member) => `<tr><td>${escapeHtml(member.first_name || '')}</td><td>${escapeHtml(member.last_name || '')}</td><td>${escapeHtml(member.role || '')}</td></tr>`).join('');
+  teamTableBody.innerHTML = availableResources.map((member) => `<tr><td>${escapeHtml(member.first_name || '')}</td><td>${escapeHtml(member.last_name || '')}</td><td>${escapeHtml(member.role || '')}</td><td>${escapeHtml(member.regieansatz || '')}</td><td>${escapeHtml(member.sollerloes || '')}</td><td>${escapeHtml(member.regie_nummer || '')}</td><td><div class="actions"><button type="button" class="action-btn" data-edit-member="${member.id}">Bearbeiten</button></div></td></tr>`).join('');
+  Array.from(teamTableBody.querySelectorAll('[data-edit-member]')).forEach((button) => button.addEventListener('click', () => {
+    const member = availableResources.find((entry) => entry.id === button.getAttribute('data-edit-member'));
+    if (member) openTeamDialog(member);
+  }));
 }
 function renderResourceOptions() {
   if (!resourceSelect) return;
@@ -336,6 +361,7 @@ function openScheduleDialog(item = null, forceResource = null) {
   scheduleForm.reset();
   colorField?.classList.toggle('is-hidden', isResourceMode);
   resourceField?.classList.toggle('is-hidden', !isResourceMode);
+  titleField?.classList.toggle('is-hidden', isResourceMode);
   if (isResourceMode) {
     scheduleDialogTitle.textContent = item ? 'Ressourcen-Eintrag bearbeiten' : 'Ressourcen-Eintrag erstellen';
   } else {
@@ -432,6 +458,26 @@ function toDateString(date) {
 }
 
 function closeScheduleDialog() { editingItemId = null; isResourceMode = false; selectedResources = []; scheduleForm?.reset(); scheduleDialog?.close(); }
+function openTeamDialog(member = null) {
+  if (!teamForm) return;
+  teamDialogTitle.textContent = member ? 'Teammitglied bearbeiten' : 'Teammitglied hinzufügen';
+  teamSubmitButton.textContent = member ? 'Aktualisieren' : 'Hinzufügen';
+  deleteTeamMemberButton?.classList.toggle('is-hidden', !member);
+  teamForm.reset();
+  teamForm.elements.memberId.value = member?.id || '';
+  teamForm.elements.firstName.value = member?.first_name || '';
+  teamForm.elements.lastName.value = member?.last_name || '';
+  teamForm.elements.role.value = member?.role || 'Lehrling';
+  teamForm.elements.regieansatz.value = member?.regieansatz || '';
+  teamForm.elements.sollerloes.value = member?.sollerloes || '';
+  teamForm.elements.regieNummer.value = member?.regie_nummer || '';
+  teamDialog?.showModal();
+}
+function closeTeamDialog() {
+  teamForm?.reset();
+  if (teamForm?.elements?.memberId) teamForm.elements.memberId.value = '';
+  teamDialog?.close();
+}
 function parseDateString(value) { return new Date(`${value}T00:00:00`); }
 function getWeekdayLabel(date) { return ['SO', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA'][date.getDay()] || ''; }
 function getStartOfIsoWeek(date) { const copy = new Date(date); const day = copy.getDay() || 7; copy.setDate(copy.getDate() - day + 1); copy.setHours(0, 0, 0, 0); return copy; }

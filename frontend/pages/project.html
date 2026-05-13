@@ -54,7 +54,7 @@
             <dialog class="project-modal" data-schedule-dialog>
               <form class="schedule-form" data-schedule-form>
                 <h3 data-schedule-dialog-title>Eintrag erstellen</h3>
-                <label>
+                <label data-title-field>
                   Titel
                   <input type="text" name="title" maxlength="120" required />
                 </label>
@@ -111,16 +111,21 @@
                     <th>Vorname</th>
                     <th>Nachname</th>
                     <th>Rolle</th>
+                    <th>Regieansatz</th>
+                    <th>Sollerlös</th>
+                    <th>Regie-Nummer</th>
+                    <th>Aktionen</th>
                   </tr>
                 </thead>
                 <tbody data-team-table-body>
-                  <tr><td colspan="3" class="table-empty">Noch keine Teammitglieder vorhanden.</td></tr>
+                  <tr><td colspan="7" class="table-empty">Noch keine Teammitglieder vorhanden.</td></tr>
                 </tbody>
               </table>
             </div>
             <dialog class="project-modal" data-team-dialog>
               <form class="schedule-form" data-team-form>
-                <h3>Teammitglied hinzufügen</h3>
+                <h3 data-team-dialog-title>Teammitglied hinzufügen</h3>
+                <input type="hidden" name="memberId" />
                 <label>
                   Name
                   <input type="text" name="firstName" maxlength="80" required />
@@ -136,9 +141,22 @@
                     <option value="Monteur">Monteur</option>
                   </select>
                 </label>
+                <label>
+                  Regieansatz
+                  <input type="text" name="regieansatz" maxlength="120" />
+                </label>
+                <label>
+                  Sollerlös
+                  <input type="text" name="sollerloes" maxlength="120" />
+                </label>
+                <label>
+                  Regie-Nummer
+                  <input type="text" name="regieNummer" maxlength="120" />
+                </label>
                 <div class="modal-actions">
+                  <button type="button" class="danger ghost is-hidden" data-delete-team-member>Löschen</button>
                   <button type="button" class="secondary" data-cancel-team-member>Abbrechen</button>
-                  <button type="submit">Hinzufügen</button>
+                  <button type="submit" data-team-submit>Speichern</button>
                 </div>
               </form>
             </dialog>

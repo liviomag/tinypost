@@ -2,10 +2,13 @@ import { getSupabaseClient } from '../services/supabaseClient.js';
 
 export async function isAuthenticated() {
   const supabase = await getSupabaseClient();
-  const { data, error } = await supabase.auth.getSession();
+  const {
+    data: { user },
+    error
+  } = await supabase.auth.getUser();
   if (error) {
-    throw error;
+    return false;
   }
 
-  return Boolean(data.session);
+  return Boolean(user);
 }

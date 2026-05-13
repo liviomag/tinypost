@@ -141,6 +141,11 @@ supabase = await getSupabaseClient();
 const { data } = await supabase.auth.getUser();
 currentUser = data.user;
 
+if (!currentUser) {
+  window.location.href = './login.html';
+  throw new Error('Nicht authentifiziert.');
+}
+
 form?.addEventListener('submit', createProject);
 tableBody?.addEventListener('click', handleTableClick);
 

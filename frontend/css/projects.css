@@ -218,5 +218,17 @@ body {
 .gantt-resource-label { display: block; color: var(--text-muted); font-size: .76rem; margin-top: .2rem; }
 .is-resource-bar { border: 1px solid #00000020; }
 
+.is-draggable-resource { cursor: grab; }
+.is-draggable-resource:active { cursor: grabbing; }
+.gantt-resize-handle {
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.gantt-resize-handle.is-left { left: 0; }
+.gantt-resize-handle.is-right { right: 0; }
+
 .resource-picker { display: flex; gap: .5rem; align-items: center; }
 .resource-picker select { flex: 1; }

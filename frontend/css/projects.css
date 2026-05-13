@@ -17,9 +17,18 @@ body {
   padding: 1.25rem;
 }
 
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 .subtitle { color: var(--text-muted); margin-top: -0.4rem; }
-.project-form { display:grid; gap:.8rem; max-width: 520px; }
-.project-form button { justify-self:start; }
+.project-form { display:grid; gap:.8rem; min-width: min(560px, 86vw); }
+
+.create-btn { white-space: nowrap; }
 
 .table-wrap { overflow-x:auto; }
 .projects-table { width:100%; border-collapse: collapse; }
@@ -35,3 +44,49 @@ body {
 .table-empty { margin: 0.8rem 0 0; color: var(--text-muted); }
 .back-link { color: var(--text-muted); text-decoration: none; font-size: .9rem; }
 .back-link:hover { text-decoration: underline; }
+
+.project-modal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 1.25rem;
+}
+
+.project-modal::backdrop {
+  background: rgba(17, 17, 17, 0.35);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.modal-actions .secondary {
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .panel-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .create-btn {
+    width: 100%;
+  }
+
+  .project-form {
+    min-width: unset;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}

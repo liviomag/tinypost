@@ -6,6 +6,9 @@ const message = document.querySelector('[data-project-message]');
 const tableBody = document.querySelector('[data-project-table-body]');
 const emptyState = document.querySelector('[data-project-empty]');
 const submitButton = document.querySelector('[data-submit-button]');
+const projectModal = document.querySelector('[data-project-modal]');
+const openModalButton = document.querySelector('[data-open-project-modal]');
+const closeModalButton = document.querySelector('[data-cancel-project-modal]');
 
 let supabase;
 let currentUser;
@@ -80,6 +83,7 @@ async function createProject(event) {
   }
 
   form.reset();
+  projectModal?.close();
   await loadProjects();
   setMessage('Projekt erfolgreich erfasst.', 'success');
 }
@@ -147,6 +151,8 @@ if (!currentUser) {
 }
 
 form?.addEventListener('submit', createProject);
+openModalButton?.addEventListener('click', openCreateModal);
+closeModalButton?.addEventListener('click', closeCreateModal);
 tableBody?.addEventListener('click', handleTableClick);
 
 try {
@@ -154,4 +160,12 @@ try {
   setMessage('');
 } catch (error) {
   setMessage(error.message || 'Projekte konnten nicht geladen werden.', 'error');
+}
+
+function openCreateModal() {
+  projectModal?.showModal();
+}
+
+function closeCreateModal() {
+  projectModal?.close();
 }

@@ -1,0 +1,37 @@
+body {
+  display: block;
+}
+
+.projects-layout {
+  width: min(1080px, 92vw);
+  margin: 2.5rem auto;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+}
+
+.subtitle { color: var(--text-muted); margin-top: -0.4rem; }
+.project-form { display:grid; gap:.8rem; max-width: 520px; }
+.project-form button { justify-self:start; }
+
+.table-wrap { overflow-x:auto; }
+.projects-table { width:100%; border-collapse: collapse; }
+.projects-table th, .projects-table td { text-align:left; padding: .75rem; border-bottom:1px solid var(--border); }
+.projects-table tbody tr { cursor:pointer; transition: var(--transition); }
+.projects-table tbody tr:hover { background: var(--surface-hover); }
+
+.actions { display:flex; gap:.5rem; }
+.action-btn { background: transparent; color: var(--text); border:1px solid var(--border); }
+.action-btn:hover { background: #fff; }
+.action-btn.danger { color:#b42318; border-color:#f3c3be; }
+
+.table-empty { margin: 0.8rem 0 0; color: var(--text-muted); }
+.back-link { color: var(--text-muted); text-decoration: none; font-size: .9rem; }
+.back-link:hover { text-decoration: underline; }

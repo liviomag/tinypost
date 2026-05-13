@@ -138,44 +138,6 @@
               </form>
             </dialog>
 
-            <dialog class="project-modal" data-information-dialog>
-              <form class="schedule-form" data-information-form>
-                <h3 data-information-dialog-title>Information erstellen</h3>
-                <input type="hidden" name="informationId" />
-                <label>
-                  Datum
-                  <input type="date" name="informationDate" required />
-                </label>
-                <label>
-                  Text
-                  <textarea name="text" rows="5" maxlength="5000" required></textarea>
-                </label>
-                <label>
-                  Verknüpftes Gantt-Item (optional)
-                  <select name="ganttItemId" data-information-gantt-select></select>
-                </label>
-                <label>
-                  Dokumente (optional)
-                  <input type="file" name="documents" multiple />
-                </label>
-                <div class="modal-actions">
-                  <button type="button" class="secondary" data-cancel-information>Abbrechen</button>
-                  <button type="submit" data-information-submit>Speichern</button>
-                </div>
-              </form>
-            </dialog>
-
-            <dialog class="project-modal" data-information-detail-dialog>
-              <div class="schedule-form">
-                <h3>Information</h3>
-                <p class="subtitle" data-information-detail-meta></p>
-                <p data-information-detail-text></p>
-                <div data-information-detail-documents></div>
-                <div class="modal-actions">
-                  <button type="button" class="secondary" data-close-information-detail>Schliessen</button>
-                </div>
-              </div>
-            </dialog>
           </section>
 
           <section data-project-section="team" class="project-section is-hidden" aria-live="polite">
@@ -244,5 +206,43 @@
         </div>
       </section>
     </main>
+    <dialog class="project-modal" data-information-dialog>
+      <form class="schedule-form" data-information-form>
+        <h3 data-information-dialog-title>Information erstellen</h3>
+        <input type="hidden" name="informationId" />
+        <label>
+          Datum
+          <input type="date" name="informationDate" required />
+        </label>
+        <label>
+          Text
+          <textarea name="text" rows="5" maxlength="5000" required></textarea>
+        </label>
+        <label>
+          Verknüpftes Gantt-Item (optional)
+          <select name="ganttItemId" data-information-gantt-select></select>
+        </label>
+        <label>
+          Dokumente (optional)
+          <input type="file" name="documents" multiple />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-cancel-information>Abbrechen</button>
+          <button type="submit" data-information-submit>Speichern</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="project-modal" data-information-detail-dialog>
+      <div class="schedule-form">
+        <h3>Information</h3>
+        <p class="subtitle" data-information-detail-meta></p>
+        <p data-information-detail-text></p>
+        <div data-information-detail-documents></div>
+        <div class="modal-actions">
+          <button type="button" class="secondary" data-close-information-detail>Schliessen</button>
+        </div>
+      </div>
+    </dialog>
   </body>
 </html>

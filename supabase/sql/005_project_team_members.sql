@@ -18,7 +18,7 @@ using (
     select 1
     from public.projects p
     where p.id = project_id
-      and p.owner = auth.uid()
+      and p.owner_id = auth.uid()
   )
 );
 
@@ -31,6 +31,6 @@ with check (
     select 1
     from public.projects p
     where p.id = project_id
-      and p.owner = auth.uid()
+      and p.owner_id = auth.uid()
   )
 );

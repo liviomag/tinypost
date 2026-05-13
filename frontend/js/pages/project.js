@@ -196,14 +196,12 @@ function renderResourceSuggestions() {
   if (!resourceSuggestions || !isResourceMode) return;
   const query = String(resourceSearchInput?.value || '').trim().toLowerCase();
   const matches = query.length < 1 ? [] : availableResources.filter((profile) => {
-    const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim().toLowerCase();
     const email = String(profile.email || '').toLowerCase();
-    return (profile.first_name || '').toLowerCase().includes(query) || (profile.last_name || '').toLowerCase().includes(query) || fullName.includes(query) || email.includes(query);
+    return email.includes(query);
   }).filter((profile) => !selectedResources.some((selected) => selected.uid === profile.id)).slice(0, 6);
   resourceSuggestions.innerHTML = matches.map((profile) => {
-    const name = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Unbenannt';
     const email = String(profile.email || '').trim();
-    const label = email ? `${name} (${email})` : name;
+    const label = email || 'Keine E-Mail hinterlegt';
     return `<button type="button" class="resource-suggestion" data-resource-id="${profile.id}">${escapeHtml(label)}</button>`;
   }).join('');
   Array.from(resourceSuggestions.querySelectorAll('[data-resource-id]')).forEach((button) => button.addEventListener('click', () => {
@@ -216,7 +214,10 @@ function renderResourceSuggestions() {
   }));
 }
 function renderSelectedResources() {
-  resourceSelected.innerHTML = selectedResources.map((entry) => `<span class="resource-chip">${escapeHtml(`${entry.first_name} ${entry.last_name}`.trim())}<button type="button" data-remove-resource="${entry.uid}">×</button></span>`).join('');
+  resourceSelected.innerHTML = selectedResources.map((entry) => {
+    const label = String(entry.email || '').trim() || `${entry.first_name || ''} ${entry.last_name || ''}`.trim() || 'Keine E-Mail hinterlegt';
+    return `<span class="resource-chip">${escapeHtml(label)}<button type="button" data-remove-resource="${entry.uid}">×</button></span>`;
+  }).join('');
   Array.from(resourceSelected.querySelectorAll('[data-remove-resource]')).forEach((button) => button.addEventListener('click', () => {
     selectedResources = selectedResources.filter((entry) => entry.uid !== button.getAttribute('data-remove-resource'));
     renderSelectedResources();

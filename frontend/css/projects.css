@@ -232,3 +232,8 @@ body {
 
 .resource-picker { display: flex; gap: .5rem; align-items: center; }
 .resource-picker select { flex: 1; }
+.pagination-controls { display:flex; align-items:center; justify-content:flex-end; gap:.7rem; margin-top:.75rem; }
+.gantt-detail-block { border-top: 1px solid var(--border); margin-top: .8rem; padding-top: .6rem; }
+.history-list { margin: 0; padding-left: 1rem; color: var(--text-muted); display: grid; gap: .3rem; }
+.linked-information-list { display: grid; gap: .45rem; }
+.linked-information-item { text-align:left; background:#fff; border:1px solid var(--border); border-radius:10px; padding:.55rem; display:grid; gap:.2rem; }

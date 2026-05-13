@@ -32,7 +32,10 @@
           <section data-project-section="ablauf" class="project-section is-hidden" aria-live="polite">
             <div class="ablauf-head">
               <h2>Ablauf</h2>
-              <button type="button" class="create-btn" data-add-schedule-item aria-label="Ablauf-Eintrag hinzufügen">＋</button>
+              <div class="ablauf-actions">
+                <button type="button" class="create-btn secondary" data-add-schedule-item aria-label="Ablauf-Eintrag hinzufügen">+ Ablauf</button>
+                <button type="button" class="create-btn" data-add-resource-item aria-label="Ressourcen-Eintrag hinzufügen">+ Ressource</button>
+              </div>
             </div>
 
             <p class="status-text" data-schedule-status></p>
@@ -62,7 +65,7 @@
                   Enddatum
                   <input type="date" name="endDate" required />
                 </label>
-                <label>
+                <label data-color-field>
                   Farbe
                   <select name="color" required>
                     <option value="#FDE2E4">Rose</option>
@@ -77,6 +80,12 @@
                     <option value="#F1D1D0">Pfirsichrosa</option>
                   </select>
                 </label>
+                <div class="resource-field is-hidden" data-resource-field>
+                  <label for="resource-search-input">Ressourcen</label>
+                  <input id="resource-search-input" type="text" data-resource-search placeholder="Vorname oder Nachname" autocomplete="off" />
+                  <div class="resource-suggestions" data-resource-suggestions></div>
+                  <div class="resource-selected" data-resource-selected></div>
+                </div>
                 <div class="modal-actions">
                   <button type="button" class="danger ghost is-hidden" data-remove-schedule-item>Eintrag entfernen</button>
                   <button type="button" class="secondary" data-cancel-schedule-item>Abbrechen</button>

@@ -207,3 +207,13 @@ body {
   .gantt-row { grid-template-columns: 1fr; }
   .gantt-timeline { margin-left: 0; }
 }
+
+.ablauf-actions { display: flex; gap: .5rem; }
+.resource-field { display: grid; gap: .45rem; }
+.resource-suggestions { display: flex; flex-wrap: wrap; gap: .35rem; }
+.resource-suggestion { background: #fff; color: var(--text); border: 1px solid var(--border); padding: .3rem .55rem; border-radius: 999px; }
+.resource-selected { display: flex; flex-wrap: wrap; gap: .35rem; }
+.resource-chip { display: inline-flex; align-items: center; gap: .35rem; background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: .25rem .5rem; font-size: .83rem; }
+.resource-chip button { border: 0; background: transparent; color: var(--text-muted); padding: 0; }
+.gantt-resource-label { display: block; color: var(--text-muted); font-size: .76rem; margin-top: .2rem; }
+.is-resource-bar { border: 1px solid #00000020; }

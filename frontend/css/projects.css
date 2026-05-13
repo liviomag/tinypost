@@ -157,7 +157,12 @@ body {
 }
 .gantt-week-header, .gantt-day-cell { background: #fff; padding: .35rem .3rem; font-size: .75rem; }
 .gantt-week-header { font-weight: 600; color: var(--text); }
-.gantt-week-header span, .gantt-day-cell span { display: block; color: var(--text-muted); font-weight: 400; }
+.gantt-week-header span { display: block; color: var(--text-muted); font-weight: 400; }
+.gantt-day-cell {
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
 
 .gantt-rows { display: grid; gap: .5rem; }
 .gantt-row {
@@ -173,17 +178,19 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   height: 22px;
+  overflow: hidden;
 }
 .gantt-row-bar {
   position: absolute;
-  top: 3px;
-  height: 14px;
+  top: 2px;
+  height: 18px;
   border: 0;
+  padding: 0;
+  box-sizing: border-box;
   border-radius: 999px;
-  background: #2f3437;
   cursor: pointer;
 }
-.gantt-row-bar:hover { background: #1f2326; }
+.gantt-row-bar:hover { filter: brightness(0.95); }
 .project-modal .ghost { margin-right: auto; }
 .is-hidden { display: none !important; }
 

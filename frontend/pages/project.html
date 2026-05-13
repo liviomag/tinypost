@@ -10,11 +10,63 @@
     <script type="module" src="../js/pages/project.js"></script>
   </head>
   <body>
-    <main class="projects-layout">
-      <section class="panel">
+    <main class="projects-layout project-view-layout">
+      <section class="panel project-meta-panel">
         <a class="back-link" href="./projects.html">← Zurück zu Projekten</a>
         <h1 data-project-title>Projekt</h1>
         <p class="subtitle" data-project-subtitle>Lade Projektdaten ...</p>
+      </section>
+
+      <section class="panel project-main-panel">
+        <aside class="project-side-nav" aria-label="Projekt-Navigation">
+          <button type="button" class="side-nav-item is-active" data-project-nav="dashboard">Dashboard</button>
+          <button type="button" class="side-nav-item" data-project-nav="ablauf">Ablauf</button>
+        </aside>
+
+        <div class="project-content">
+          <section data-project-section="dashboard" class="project-section">
+            <h2>Dashboard</h2>
+            <p class="subtitle">Dashboard</p>
+          </section>
+
+          <section data-project-section="ablauf" class="project-section is-hidden" aria-live="polite">
+            <div class="ablauf-head">
+              <h2>Ablauf</h2>
+              <button type="button" class="create-btn" data-add-schedule-item aria-label="Ablauf-Eintrag hinzufügen">＋</button>
+            </div>
+
+            <p class="status-text" data-schedule-status></p>
+
+            <form class="schedule-form is-hidden" data-schedule-form>
+              <label>
+                Titel
+                <input type="text" name="title" maxlength="120" required />
+              </label>
+              <label>
+                Startdatum
+                <input type="date" name="startDate" required />
+              </label>
+              <label>
+                Enddatum
+                <input type="date" name="endDate" required />
+              </label>
+              <div class="modal-actions">
+                <button type="button" class="secondary" data-cancel-schedule-item>Abbrechen</button>
+                <button type="submit">Speichern</button>
+              </div>
+            </form>
+
+            <div class="gantt-controls">
+              <button type="button" class="secondary" data-gantt-prev>Vorherige 5 Wochen</button>
+              <p class="subtitle" data-gantt-range></p>
+              <button type="button" class="secondary" data-gantt-next>Nächste 5 Wochen</button>
+            </div>
+
+            <div class="gantt-wrap">
+              <div class="gantt-grid" data-gantt-grid></div>
+            </div>
+          </section>
+        </div>
       </section>
     </main>
   </body>

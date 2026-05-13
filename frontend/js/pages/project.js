@@ -129,7 +129,7 @@ async function loadProject() {
   subtitle.textContent = `Kommissionsnummer ${data.kommissionsnummer} · Erstellt am ${new Date(data.created_at).toLocaleDateString('de-DE')}`;
 }
 async function loadResources() {
-  const { data } = await supabase.from('profiles').select('id, first_name, last_name').order('first_name', { ascending: true });
+  const { data } = await supabase.from('profiles').select('id, first_name, last_name, email').order('first_name', { ascending: true });
   availableResources = data || [];
 }
 async function loadScheduleItems() {
@@ -197,13 +197,19 @@ function renderResourceSuggestions() {
   const query = String(resourceSearchInput?.value || '').trim().toLowerCase();
   const matches = query.length < 1 ? [] : availableResources.filter((profile) => {
     const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim().toLowerCase();
-    return (profile.first_name || '').toLowerCase().includes(query) || (profile.last_name || '').toLowerCase().includes(query) || fullName.includes(query);
+    const email = String(profile.email || '').toLowerCase();
+    return (profile.first_name || '').toLowerCase().includes(query) || (profile.last_name || '').toLowerCase().includes(query) || fullName.includes(query) || email.includes(query);
   }).filter((profile) => !selectedResources.some((selected) => selected.uid === profile.id)).slice(0, 6);
-  resourceSuggestions.innerHTML = matches.map((profile) => `<button type="button" class="resource-suggestion" data-resource-id="${profile.id}">${escapeHtml(`${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Unbenannt')}</button>`).join('');
+  resourceSuggestions.innerHTML = matches.map((profile) => {
+    const name = `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Unbenannt';
+    const email = String(profile.email || '').trim();
+    const label = email ? `${name} (${email})` : name;
+    return `<button type="button" class="resource-suggestion" data-resource-id="${profile.id}">${escapeHtml(label)}</button>`;
+  }).join('');
   Array.from(resourceSuggestions.querySelectorAll('[data-resource-id]')).forEach((button) => button.addEventListener('click', () => {
     const profile = availableResources.find((entry) => entry.id === button.getAttribute('data-resource-id'));
     if (!profile) return;
-    selectedResources.push({ uid: profile.id, first_name: profile.first_name || '', last_name: profile.last_name || '' });
+    selectedResources.push({ uid: profile.id, first_name: profile.first_name || '', last_name: profile.last_name || '', email: profile.email || '' });
     resourceSearchInput.value = '';
     renderSelectedResources();
     renderResourceSuggestions();

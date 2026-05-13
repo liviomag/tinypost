@@ -219,8 +219,16 @@
           <textarea name="text" rows="5" maxlength="5000" required></textarea>
         </label>
         <label>
+          Verknüpfungstyp (optional)
+          <select name="ganttLinkType" data-information-gantt-link-type>
+            <option value="">Nicht verknüpft</option>
+            <option value="resource">Mit Ressource verknüpfen</option>
+            <option value="schedule">Mit statischem Item verknüpfen</option>
+          </select>
+        </label>
+        <label>
           Verknüpftes Gantt-Item (optional)
-          <select name="ganttItemId" data-information-gantt-select></select>
+          <select name="ganttItemId" data-information-gantt-select disabled></select>
         </label>
         <label>
           Dokumente (optional)

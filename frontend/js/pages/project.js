@@ -51,6 +51,7 @@ const informationForm = document.querySelector('[data-information-form]');
 const informationDialogTitle = document.querySelector('[data-information-dialog-title]');
 const informationSubmitButton = document.querySelector('[data-information-submit]');
 const cancelInformationButton = document.querySelector('[data-cancel-information]');
+const informationGanttLinkTypeSelect = document.querySelector('[data-information-gantt-link-type]');
 const informationGanttSelect = document.querySelector('[data-information-gantt-select]');
 const informationDetailDialog = document.querySelector('[data-information-detail-dialog]');
 const informationDetailMeta = document.querySelector('[data-information-detail-meta]');
@@ -98,6 +99,9 @@ informationNextButton?.addEventListener('click', async () => {
   if (!hasMoreInformation) return;
   informationPage += 1;
   await loadInformationItems();
+});
+informationGanttLinkTypeSelect?.addEventListener('change', () => {
+  populateGanttSelectByType(informationGanttLinkTypeSelect.value || '');
 });
 
 teamForm?.addEventListener('submit', async (event) => {
@@ -469,6 +473,7 @@ async function openInformationDialog(id = null) {
   informationForm.dataset.documents = '[]';
   informationDialogTitle.textContent = id ? 'Information bearbeiten' : 'Information erstellen';
   informationSubmitButton.textContent = id ? 'Aktualisieren' : 'Speichern';
+  informationForm.elements.informationDate.value = toDateString(new Date());
   await populateGanttSelect();
   if (id) {
     const { data } = await supabase.from('project_information_items').select('id, text, information_date, gantt_item_id, documents').eq('id', id).eq('project_id', projectId).single();
@@ -476,14 +481,33 @@ async function openInformationDialog(id = null) {
     informationForm.elements.informationId.value = data.id;
     informationForm.elements.text.value = data.text || '';
     informationForm.elements.informationDate.value = data.information_date;
+    const linkedItem = scheduleItems.find((entry) => entry.id === data.gantt_item_id);
+    informationForm.elements.ganttLinkType.value = linkedItem ? (linkedItem.resources ? 'resource' : 'schedule') : '';
+    populateGanttSelectByType(informationForm.elements.ganttLinkType.value || '');
     informationForm.elements.ganttItemId.value = data.gantt_item_id || '';
     informationForm.dataset.documents = JSON.stringify(data.documents || []);
+  } else {
+    informationForm.elements.ganttLinkType.value = '';
+    populateGanttSelectByType('');
   }
   informationDialog.showModal();
 }
 function closeInformationDialog() { informationForm?.reset(); informationDialog?.close(); }
 async function populateGanttSelect() {
-  informationGanttSelect.innerHTML = '<option value="">Nicht verknüpft</option>' + scheduleItems.map((entry) => `<option value="${entry.id}">${escapeHtml(entry.title)}</option>`).join('');
+  populateGanttSelectByType(informationGanttLinkTypeSelect?.value || '');
+}
+function populateGanttSelectByType(linkType) {
+  if (!informationGanttSelect) return;
+  if (!linkType) {
+    informationGanttSelect.innerHTML = '<option value="">Bitte zuerst Verknüpfungstyp wählen</option>';
+    informationGanttSelect.disabled = true;
+    informationGanttSelect.value = '';
+    return;
+  }
+  const shouldBeResource = linkType === 'resource';
+  const options = scheduleItems.filter((entry) => Boolean(entry.resources) === shouldBeResource);
+  informationGanttSelect.innerHTML = ['<option value="">Item auswählen</option>', ...options.map((entry) => `<option value="${entry.id}">${escapeHtml(entry.title)}</option>`)].join('');
+  informationGanttSelect.disabled = false;
 }
 function renderGanttHistory(item) {
   if (!item?.history?.length) return (ganttHistoryList.innerHTML = '<li class="table-empty">Keine Historie verfügbar.</li>');

@@ -144,7 +144,8 @@ body {
 }
 
 .gantt-wrap { overflow-x: auto; margin-top: .6rem; }
-.gantt-grid { min-width: 760px; display: grid; gap: .5rem; }
+.gantt-grid { min-width: 980px; display: grid; gap: .5rem; }
+.gantt-timeline { margin-left: 240px; }
 .gantt-grid-head, .gantt-grid-days {
   display: grid;
   grid-template-columns: repeat(35, minmax(16px, 1fr));
@@ -161,11 +162,10 @@ body {
 .gantt-rows { display: grid; gap: .5rem; }
 .gantt-row {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) 1fr;
+  grid-template-columns: 240px 1fr;
   gap: .7rem;
   align-items: center;
 }
-.gantt-row-meta { display: grid; gap: .45rem; }
 .gantt-row-title { font-size: .9rem; color: var(--text); }
 .gantt-row-track {
   position: relative;
@@ -178,9 +178,14 @@ body {
   position: absolute;
   top: 3px;
   height: 14px;
+  border: 0;
   border-radius: 999px;
   background: #2f3437;
+  cursor: pointer;
 }
+.gantt-row-bar:hover { background: #1f2326; }
+.project-modal .ghost { margin-right: auto; }
+.is-hidden { display: none !important; }
 
 .project-modal .danger {
   background: #b42318;
@@ -193,4 +198,5 @@ body {
   .project-main-panel { grid-template-columns: 1fr; }
   .project-side-nav { flex-direction: row; }
   .gantt-row { grid-template-columns: 1fr; }
+  .gantt-timeline { margin-left: 0; }
 }

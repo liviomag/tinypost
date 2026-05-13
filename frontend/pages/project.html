@@ -21,6 +21,7 @@
         <aside class="project-side-nav" aria-label="Projekt-Navigation">
           <button type="button" class="side-nav-item is-active" data-project-nav="dashboard">Dashboard</button>
           <button type="button" class="side-nav-item" data-project-nav="ablauf">Ablauf</button>
+          <button type="button" class="side-nav-item" data-project-nav="team">Team</button>
         </aside>
 
         <div class="project-content">
@@ -81,15 +82,63 @@
                   </select>
                 </label>
                 <div class="resource-field is-hidden" data-resource-field>
-                  <label for="resource-search-input">Ressourcen</label>
-                  <input id="resource-search-input" type="text" data-resource-search placeholder="E-Mail-Adresse suchen" autocomplete="off" />
-                  <div class="resource-suggestions" data-resource-suggestions></div>
+                  <label for="resource-select-input">Ressource auswählen</label>
+                  <div class="resource-picker">
+                    <select id="resource-select-input" data-resource-select></select>
+                    <button type="button" class="secondary" data-add-selected-resource>+ Person</button>
+                  </div>
                   <div class="resource-selected" data-resource-selected></div>
                 </div>
                 <div class="modal-actions">
                   <button type="button" class="danger ghost is-hidden" data-remove-schedule-item>Eintrag entfernen</button>
                   <button type="button" class="secondary" data-cancel-schedule-item>Abbrechen</button>
                   <button type="submit" data-schedule-submit>Speichern</button>
+                </div>
+              </form>
+            </dialog>
+          </section>
+
+          <section data-project-section="team" class="project-section is-hidden" aria-live="polite">
+            <div class="ablauf-head">
+              <h2>Team</h2>
+              <button type="button" class="create-btn" data-add-team-member>+ Team</button>
+            </div>
+            <p class="status-text" data-team-status></p>
+            <div class="table-wrap">
+              <table class="projects-table">
+                <thead>
+                  <tr>
+                    <th>Vorname</th>
+                    <th>Nachname</th>
+                    <th>Rolle</th>
+                  </tr>
+                </thead>
+                <tbody data-team-table-body>
+                  <tr><td colspan="3" class="table-empty">Noch keine Teammitglieder vorhanden.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <dialog class="project-modal" data-team-dialog>
+              <form class="schedule-form" data-team-form>
+                <h3>Teammitglied hinzufügen</h3>
+                <label>
+                  Name
+                  <input type="text" name="firstName" maxlength="80" required />
+                </label>
+                <label>
+                  Nachname
+                  <input type="text" name="lastName" maxlength="80" required />
+                </label>
+                <label>
+                  Einstellung
+                  <select name="role" required>
+                    <option value="Lehrling">Lehrling</option>
+                    <option value="Monteur">Monteur</option>
+                  </select>
+                </label>
+                <div class="modal-actions">
+                  <button type="button" class="secondary" data-cancel-team-member>Abbrechen</button>
+                  <button type="submit">Hinzufügen</button>
                 </div>
               </form>
             </dialog>

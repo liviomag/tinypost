@@ -21,6 +21,7 @@
         <aside class="project-side-nav" aria-label="Projekt-Navigation">
           <button type="button" class="side-nav-item is-active" data-project-nav="dashboard">Dashboard</button>
           <button type="button" class="side-nav-item" data-project-nav="ablauf">Ablauf</button>
+          <button type="button" class="side-nav-item" data-project-nav="informationen">Informationen</button>
           <button type="button" class="side-nav-item" data-project-nav="team">Team</button>
         </aside>
 
@@ -28,6 +29,34 @@
           <section data-project-section="dashboard" class="project-section">
             <h2>Dashboard</h2>
             <p class="subtitle">Dashboard</p>
+          </section>
+
+          <section data-project-section="informationen" class="project-section is-hidden" aria-live="polite">
+            <div class="ablauf-head">
+              <h2>Informationen</h2>
+              <button type="button" class="create-btn" data-add-information>+ Information</button>
+            </div>
+            <p class="status-text" data-information-status></p>
+            <div class="table-wrap">
+              <table class="projects-table">
+                <thead>
+                  <tr>
+                    <th>Datum</th>
+                    <th>Vorschau</th>
+                    <th>Dokumente</th>
+                    <th>Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody data-information-table-body>
+                  <tr><td colspan="4" class="table-empty">Noch keine Informationen vorhanden.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination-controls">
+              <button type="button" class="secondary" data-information-prev>Zurück</button>
+              <p class="subtitle" data-information-page-label>Seite 1</p>
+              <button type="button" class="secondary" data-information-next>Weiter</button>
+            </div>
           </section>
 
           <section data-project-section="ablauf" class="project-section is-hidden" aria-live="polite">
@@ -94,7 +123,58 @@
                   <button type="button" class="secondary" data-cancel-schedule-item>Abbrechen</button>
                   <button type="submit" data-schedule-submit>Speichern</button>
                 </div>
+                <section class="gantt-detail-block">
+                  <h4>History</h4>
+                  <ul class="history-list" data-gantt-history-list>
+                    <li class="table-empty">Keine Historie verfügbar.</li>
+                  </ul>
+                </section>
+                <section class="gantt-detail-block">
+                  <h4>Verlinkte Informationen</h4>
+                  <div class="linked-information-list" data-linked-information-list>
+                    <p class="table-empty">Keine verlinkten Informationen.</p>
+                  </div>
+                </section>
               </form>
+            </dialog>
+
+            <dialog class="project-modal" data-information-dialog>
+              <form class="schedule-form" data-information-form>
+                <h3 data-information-dialog-title>Information erstellen</h3>
+                <input type="hidden" name="informationId" />
+                <label>
+                  Datum
+                  <input type="date" name="informationDate" required />
+                </label>
+                <label>
+                  Text
+                  <textarea name="text" rows="5" maxlength="5000" required></textarea>
+                </label>
+                <label>
+                  Verknüpftes Gantt-Item (optional)
+                  <select name="ganttItemId" data-information-gantt-select></select>
+                </label>
+                <label>
+                  Dokumente (optional)
+                  <input type="file" name="documents" multiple />
+                </label>
+                <div class="modal-actions">
+                  <button type="button" class="secondary" data-cancel-information>Abbrechen</button>
+                  <button type="submit" data-information-submit>Speichern</button>
+                </div>
+              </form>
+            </dialog>
+
+            <dialog class="project-modal" data-information-detail-dialog>
+              <div class="schedule-form">
+                <h3>Information</h3>
+                <p class="subtitle" data-information-detail-meta></p>
+                <p data-information-detail-text></p>
+                <div data-information-detail-documents></div>
+                <div class="modal-actions">
+                  <button type="button" class="secondary" data-close-information-detail>Schliessen</button>
+                </div>
+              </div>
             </dialog>
           </section>
 

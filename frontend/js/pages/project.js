@@ -28,6 +28,8 @@ const ganttPrevButton = document.querySelector('[data-gantt-prev]');
 const ganttNextButton = document.querySelector('[data-gantt-next]');
 const ganttRange = document.querySelector('[data-gantt-range]');
 const ganttGrid = document.querySelector('[data-gantt-grid]');
+const ganttHistoryList = document.querySelector('[data-gantt-history-list]');
+const linkedInformationList = document.querySelector('[data-linked-information-list]');
 
 const teamStatus = document.querySelector('[data-team-status]');
 const teamTableBody = document.querySelector('[data-team-table-body]');
@@ -38,6 +40,23 @@ const cancelTeamMemberButton = document.querySelector('[data-cancel-team-member]
 const teamDialogTitle = document.querySelector('[data-team-dialog-title]');
 const teamSubmitButton = document.querySelector('[data-team-submit]');
 const deleteTeamMemberButton = document.querySelector('[data-delete-team-member]');
+const informationStatus = document.querySelector('[data-information-status]');
+const informationTableBody = document.querySelector('[data-information-table-body]');
+const informationPrevButton = document.querySelector('[data-information-prev]');
+const informationNextButton = document.querySelector('[data-information-next]');
+const informationPageLabel = document.querySelector('[data-information-page-label]');
+const addInformationButton = document.querySelector('[data-add-information]');
+const informationDialog = document.querySelector('[data-information-dialog]');
+const informationForm = document.querySelector('[data-information-form]');
+const informationDialogTitle = document.querySelector('[data-information-dialog-title]');
+const informationSubmitButton = document.querySelector('[data-information-submit]');
+const cancelInformationButton = document.querySelector('[data-cancel-information]');
+const informationGanttSelect = document.querySelector('[data-information-gantt-select]');
+const informationDetailDialog = document.querySelector('[data-information-detail-dialog]');
+const informationDetailMeta = document.querySelector('[data-information-detail-meta]');
+const informationDetailText = document.querySelector('[data-information-detail-text]');
+const informationDetailDocuments = document.querySelector('[data-information-detail-documents]');
+const closeInformationDetailButton = document.querySelector('[data-close-information-detail]');
 
 let supabase = null;
 let scheduleItems = [];
@@ -46,6 +65,9 @@ let selectedResources = [];
 let visibleStartDate = getStartOfIsoWeek(addDays(new Date(), -7));
 let editingItemId = null;
 let isResourceMode = false;
+let informationPage = 0;
+const informationPageSize = 20;
+let hasMoreInformation = false;
 const GANTT_WINDOW_DAYS = 35;
 
 await requireAuth();
@@ -55,7 +77,7 @@ if (!projectId) {
   subtitle.textContent = 'Keine Projekt-ID übergeben.';
 } else {
   supabase = await getSupabaseClient();
-  await Promise.all([loadProject(), loadScheduleItems(), loadTeamMembers()]);
+  await Promise.all([loadProject(), loadScheduleItems(), loadTeamMembers(), loadInformationItems()]);
 }
 
 addScheduleItemButton?.addEventListener('click', () => openScheduleDialog(null, false));
@@ -64,6 +86,19 @@ cancelScheduleItemButton?.addEventListener('click', closeScheduleDialog);
 addSelectedResourceButton?.addEventListener('click', addSelectedResource);
 addTeamMemberButton?.addEventListener('click', () => openTeamDialog(null));
 cancelTeamMemberButton?.addEventListener('click', closeTeamDialog);
+addInformationButton?.addEventListener('click', () => openInformationDialog());
+cancelInformationButton?.addEventListener('click', closeInformationDialog);
+closeInformationDetailButton?.addEventListener('click', () => informationDetailDialog?.close());
+informationPrevButton?.addEventListener('click', async () => {
+  if (informationPage === 0) return;
+  informationPage -= 1;
+  await loadInformationItems();
+});
+informationNextButton?.addEventListener('click', async () => {
+  if (!hasMoreInformation) return;
+  informationPage += 1;
+  await loadInformationItems();
+});
 
 teamForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -229,7 +264,7 @@ function addSelectedResource() {
 }
 async function loadScheduleItems() {
   scheduleStatus.textContent = 'Lade Ablauf-Einträge ...';
-  const { data, error } = await supabase.from('project_schedule_items').select('id, title, start_date, end_date, color, resources, resource_assignments, created_at').eq('project_id', projectId).order('start_date', { ascending: true });
+  const { data, error } = await supabase.from('project_schedule_items').select('id, title, start_date, end_date, color, resources, resource_assignments, created_at, updated_at, history').eq('project_id', projectId).order('start_date', { ascending: true });
   if (error) {
     scheduleItems = [];
     scheduleStatus.textContent = `Fehler beim Laden: ${error.message}`;
@@ -377,9 +412,104 @@ function openScheduleDialog(item = null, forceResource = null) {
   } else {
     scheduleForm.elements.color.value = '#D6E2E9';
   }
+  renderGanttHistory(item);
+  loadLinkedInformation(item?.id || null);
   renderSelectedResources();
   renderResourceOptions();
   scheduleDialog?.showModal();
+}
+async function loadInformationItems() {
+  informationStatus.textContent = 'Lade Informationen ...';
+  const from = informationPage * informationPageSize;
+  const to = from + informationPageSize;
+  const { data, error } = await supabase.from('project_information_items').select('id, text, information_date, documents').eq('project_id', projectId).is('gantt_item_id', null).order('information_date', { ascending: false }).range(from, to);
+  if (error) return (informationStatus.textContent = `Fehler beim Laden: ${error.message}`);
+  hasMoreInformation = (data || []).length > informationPageSize;
+  renderInformationTable((data || []).slice(0, informationPageSize));
+  informationPageLabel.textContent = `Seite ${informationPage + 1}`;
+  informationPrevButton.disabled = informationPage === 0;
+  informationNextButton.disabled = !hasMoreInformation;
+  informationStatus.textContent = `${(data || []).slice(0, informationPageSize).length} Informationen geladen.`;
+}
+function renderInformationTable(items) {
+  if (!items.length) {
+    informationTableBody.innerHTML = '<tr><td colspan="4" class="table-empty">Keine offenen Informationen vorhanden.</td></tr>';
+    return;
+  }
+  informationTableBody.innerHTML = items.map((item) => `<tr><td>${formatDate(parseDateString(item.information_date))}</td><td>${escapeHtml((item.text || '').slice(0, 120))}</td><td>${Array.isArray(item.documents) ? item.documents.length : 0}</td><td><button type="button" class="action-btn" data-open-information="${item.id}">Öffnen</button><button type="button" class="action-btn" data-edit-information="${item.id}">Bearbeiten</button></td></tr>`).join('');
+  Array.from(informationTableBody.querySelectorAll('[data-open-information]')).forEach((button) => button.addEventListener('click', async () => openInformationDetail(button.getAttribute('data-open-information'))));
+  Array.from(informationTableBody.querySelectorAll('[data-edit-information]')).forEach((button) => button.addEventListener('click', async () => openInformationDialog(button.getAttribute('data-edit-information'))));
+}
+informationForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const formData = new FormData(informationForm);
+  const informationId = String(formData.get('informationId') || '').trim();
+  const text = String(formData.get('text') || '').trim();
+  const informationDate = String(formData.get('informationDate') || '');
+  const ganttItemId = String(formData.get('ganttItemId') || '').trim();
+  const files = Array.from(informationForm.elements.documents.files || []);
+  if (!text || !informationDate) return;
+  const existingDocuments = informationForm.dataset.documents ? JSON.parse(informationForm.dataset.documents) : [];
+  const uploadedDocuments = [];
+  for (const file of files) {
+    const path = `${projectId}/${Date.now()}-${file.name}`;
+    const { error: uploadError } = await supabase.storage.from('project-information-documents').upload(path, file);
+    if (uploadError) return (informationStatus.textContent = `Upload fehlgeschlagen: ${uploadError.message}`);
+    uploadedDocuments.push({ path, filename: file.name, mime_type: file.type || 'application/octet-stream' });
+  }
+  const payload = { project_id: projectId, text, information_date: informationDate, gantt_item_id: ganttItemId || null, documents: [...existingDocuments, ...uploadedDocuments] };
+  const { error } = informationId ? await supabase.from('project_information_items').update(payload).eq('id', informationId).eq('project_id', projectId) : await supabase.from('project_information_items').insert(payload);
+  if (error) return (informationStatus.textContent = `Fehler beim Speichern: ${error.message}`);
+  closeInformationDialog();
+  await loadInformationItems();
+  await loadLinkedInformation(editingItemId);
+});
+async function openInformationDialog(id = null) {
+  informationForm.reset();
+  informationForm.dataset.documents = '[]';
+  informationDialogTitle.textContent = id ? 'Information bearbeiten' : 'Information erstellen';
+  informationSubmitButton.textContent = id ? 'Aktualisieren' : 'Speichern';
+  await populateGanttSelect();
+  if (id) {
+    const { data } = await supabase.from('project_information_items').select('id, text, information_date, gantt_item_id, documents').eq('id', id).eq('project_id', projectId).single();
+    if (!data) return;
+    informationForm.elements.informationId.value = data.id;
+    informationForm.elements.text.value = data.text || '';
+    informationForm.elements.informationDate.value = data.information_date;
+    informationForm.elements.ganttItemId.value = data.gantt_item_id || '';
+    informationForm.dataset.documents = JSON.stringify(data.documents || []);
+  }
+  informationDialog.showModal();
+}
+function closeInformationDialog() { informationForm?.reset(); informationDialog?.close(); }
+async function populateGanttSelect() {
+  informationGanttSelect.innerHTML = '<option value="">Nicht verknüpft</option>' + scheduleItems.map((entry) => `<option value="${entry.id}">${escapeHtml(entry.title)}</option>`).join('');
+}
+function renderGanttHistory(item) {
+  if (!item?.history?.length) return (ganttHistoryList.innerHTML = '<li class="table-empty">Keine Historie verfügbar.</li>');
+  ganttHistoryList.innerHTML = item.history.slice().reverse().map((entry) => `<li>${formatDate(new Date(entry.changed_at || item.updated_at || item.created_at))} · ${escapeHtml(entry.title || item.title)}</li>`).join('');
+}
+async function loadLinkedInformation(ganttItemId) {
+  if (!ganttItemId) return (linkedInformationList.innerHTML = '<p class="table-empty">Keine verlinkten Informationen.</p>');
+  const { data, error } = await supabase.from('project_information_items').select('id, text, information_date, documents').eq('project_id', projectId).eq('gantt_item_id', ganttItemId).order('information_date', { ascending: false });
+  if (error) return (linkedInformationList.innerHTML = `<p class="table-empty">Fehler: ${escapeHtml(error.message)}</p>`);
+  if (!data?.length) return (linkedInformationList.innerHTML = '<p class="table-empty">Keine verlinkten Informationen.</p>');
+  linkedInformationList.innerHTML = data.map((item) => `<button type="button" class="linked-information-item" data-open-linked-information="${item.id}"><span>${formatDate(parseDateString(item.information_date))}</span><strong>${escapeHtml((item.text || '').slice(0, 120))}</strong><small>${Array.isArray(item.documents) ? item.documents.length : 0} Dokument(e)</small></button>`).join('');
+  Array.from(linkedInformationList.querySelectorAll('[data-open-linked-information]')).forEach((button) => button.addEventListener('click', () => openInformationDetail(button.getAttribute('data-open-linked-information'))));
+}
+async function openInformationDetail(id) {
+  const { data } = await supabase.from('project_information_items').select('id, text, information_date, gantt_item_id, documents, project_id').eq('id', id).eq('project_id', projectId).single();
+  if (!data) return;
+  informationDetailMeta.textContent = `Datum: ${formatDate(parseDateString(data.information_date))} · Projekt: ${data.project_id}${data.gantt_item_id ? ` · Gantt-Item: ${data.gantt_item_id}` : ''}`;
+  informationDetailText.textContent = data.text || '';
+  informationDetailDocuments.innerHTML = (data.documents || []).map((doc) => `<p><a href="#" data-document-path="${escapeHtml(doc.path)}">${escapeHtml(doc.filename || doc.path)}</a></p>`).join('') || '<p class="table-empty">Keine Dokumente.</p>';
+  Array.from(informationDetailDocuments.querySelectorAll('[data-document-path]')).forEach((link) => link.addEventListener('click', async (event) => {
+    event.preventDefault();
+    const path = link.getAttribute('data-document-path');
+    const { data: signed } = await supabase.storage.from('project-information-documents').createSignedUrl(path, 300);
+    if (signed?.signedUrl) window.open(signed.signedUrl, '_blank', 'noopener');
+  }));
+  informationDetailDialog.showModal();
 }
 
 function renderSelectedResources() {

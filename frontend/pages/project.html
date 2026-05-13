@@ -37,25 +37,6 @@
 
             <p class="status-text" data-schedule-status></p>
 
-            <form class="schedule-form is-hidden" data-schedule-form>
-              <label>
-                Titel
-                <input type="text" name="title" maxlength="120" required />
-              </label>
-              <label>
-                Startdatum
-                <input type="date" name="startDate" required />
-              </label>
-              <label>
-                Enddatum
-                <input type="date" name="endDate" required />
-              </label>
-              <div class="modal-actions">
-                <button type="button" class="secondary" data-cancel-schedule-item>Abbrechen</button>
-                <button type="submit">Speichern</button>
-              </div>
-            </form>
-
             <div class="gantt-controls">
               <button type="button" class="secondary" data-gantt-prev>Vorherige 5 Wochen</button>
               <p class="subtitle" data-gantt-range></p>
@@ -65,6 +46,37 @@
             <div class="gantt-wrap">
               <div class="gantt-grid" data-gantt-grid></div>
             </div>
+
+            <dialog class="project-modal" data-schedule-dialog>
+              <form class="schedule-form" data-schedule-form>
+                <h3 data-schedule-dialog-title>Eintrag erstellen</h3>
+                <label>
+                  Titel
+                  <input type="text" name="title" maxlength="120" required />
+                </label>
+                <label>
+                  Startdatum
+                  <input type="date" name="startDate" required />
+                </label>
+                <label>
+                  Enddatum
+                  <input type="date" name="endDate" required />
+                </label>
+                <div class="modal-actions">
+                  <button type="button" class="secondary" data-cancel-schedule-item>Abbrechen</button>
+                  <button type="submit" data-schedule-submit>Speichern</button>
+                </div>
+              </form>
+            </dialog>
+
+            <dialog class="project-modal" data-delete-dialog>
+              <h3>Eintrag löschen</h3>
+              <p data-delete-message>Möchtest du diesen Eintrag wirklich löschen?</p>
+              <div class="modal-actions">
+                <button type="button" class="secondary" data-cancel-delete>Abbrechen</button>
+                <button type="button" class="danger" data-confirm-delete>Ja, löschen</button>
+              </div>
+            </dialog>
           </section>
         </div>
       </section>

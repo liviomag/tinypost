@@ -10,9 +10,16 @@ const navButtons = Array.from(document.querySelectorAll('[data-project-nav]'));
 const sections = Array.from(document.querySelectorAll('[data-project-section]'));
 
 const scheduleStatus = document.querySelector('[data-schedule-status]');
+const scheduleDialog = document.querySelector('[data-schedule-dialog]');
 const scheduleForm = document.querySelector('[data-schedule-form]');
+const scheduleDialogTitle = document.querySelector('[data-schedule-dialog-title]');
+const scheduleSubmitButton = document.querySelector('[data-schedule-submit]');
 const addScheduleItemButton = document.querySelector('[data-add-schedule-item]');
 const cancelScheduleItemButton = document.querySelector('[data-cancel-schedule-item]');
+const deleteDialog = document.querySelector('[data-delete-dialog]');
+const deleteMessage = document.querySelector('[data-delete-message]');
+const cancelDeleteButton = document.querySelector('[data-cancel-delete]');
+const confirmDeleteButton = document.querySelector('[data-confirm-delete]');
 const ganttPrevButton = document.querySelector('[data-gantt-prev]');
 const ganttNextButton = document.querySelector('[data-gantt-next]');
 const ganttRange = document.querySelector('[data-gantt-range]');
@@ -21,6 +28,8 @@ const ganttGrid = document.querySelector('[data-gantt-grid]');
 let supabase = null;
 let scheduleItems = [];
 let visibleStartDate = getStartOfIsoWeek(addDays(new Date(), -7));
+let editingItemId = null;
+let pendingDeleteItem = null;
 
 await requireAuth();
 
@@ -34,14 +43,33 @@ if (!projectId) {
 }
 
 addScheduleItemButton?.addEventListener('click', () => {
-  scheduleForm?.classList.remove('is-hidden');
+  openScheduleDialog();
   scheduleStatus.textContent = '';
 });
 
 cancelScheduleItemButton?.addEventListener('click', () => {
-  scheduleForm?.reset();
-  scheduleForm?.classList.add('is-hidden');
+  closeScheduleDialog();
   scheduleStatus.textContent = '';
+});
+
+cancelDeleteButton?.addEventListener('click', () => closeDeleteDialog());
+
+confirmDeleteButton?.addEventListener('click', async () => {
+  if (!pendingDeleteItem) {
+    closeDeleteDialog();
+    return;
+  }
+
+  const { error } = await supabase.from('project_schedule_items').delete().eq('id', pendingDeleteItem.id).eq('project_id', projectId);
+
+  if (error) {
+    scheduleStatus.textContent = `Fehler beim Löschen: ${error.message}`;
+    return;
+  }
+
+  scheduleStatus.textContent = `Eintrag „${pendingDeleteItem.title}“ wurde gelöscht.`;
+  closeDeleteDialog();
+  await loadScheduleItems();
 });
 
 scheduleForm?.addEventListener('submit', async (event) => {
@@ -62,23 +90,34 @@ scheduleForm?.addEventListener('submit', async (event) => {
     return;
   }
 
-  scheduleStatus.textContent = 'Speichere Eintrag ...';
+  scheduleStatus.textContent = editingItemId ? 'Aktualisiere Eintrag ...' : 'Speichere Eintrag ...';
 
-  const { error } = await supabase.from('project_schedule_items').insert({
-    project_id: projectId,
-    title: titleValue,
-    start_date: startDate,
-    end_date: endDate,
-  });
+  const operation = editingItemId
+    ? supabase
+        .from('project_schedule_items')
+        .update({
+          title: titleValue,
+          start_date: startDate,
+          end_date: endDate,
+        })
+        .eq('id', editingItemId)
+        .eq('project_id', projectId)
+    : supabase.from('project_schedule_items').insert({
+        project_id: projectId,
+        title: titleValue,
+        start_date: startDate,
+        end_date: endDate,
+      });
+
+  const { error } = await operation;
 
   if (error) {
     scheduleStatus.textContent = `Fehler beim Speichern: ${error.message}`;
     return;
   }
 
-  scheduleStatus.textContent = 'Eintrag gespeichert.';
-  scheduleForm.reset();
-  scheduleForm.classList.add('is-hidden');
+  scheduleStatus.textContent = editingItemId ? 'Eintrag aktualisiert.' : 'Eintrag gespeichert.';
+  closeScheduleDialog();
   await loadScheduleItems();
 });
 
@@ -197,7 +236,13 @@ function renderGantt() {
 
       return `
         <div class="gantt-row">
-          <div class="gantt-row-title">${escapeHtml(item.title)}</div>
+          <div class="gantt-row-meta">
+            <div class="gantt-row-title">${escapeHtml(item.title)}</div>
+            <div class="actions">
+              <button type="button" class="action-btn" data-edit-item="${item.id}">Bearbeiten</button>
+              <button type="button" class="action-btn danger" data-delete-item="${item.id}">Löschen</button>
+            </div>
+          </div>
           <div class="gantt-row-track">
             <div class="gantt-row-bar" style="left: calc(${startOffsetDays} * (100% / 35)); width: calc(${spanDays} * (100% / 35));"></div>
           </div>
@@ -211,6 +256,70 @@ function renderGantt() {
     <div class="gantt-grid-days">${dayCells}</div>
     <div class="gantt-rows">${rows || '<p class="table-empty">Keine Einträge im sichtbaren Zeitraum.</p>'}</div>
   `;
+
+  bindItemActions();
+}
+
+function bindItemActions() {
+  const editButtons = Array.from(ganttGrid.querySelectorAll('[data-edit-item]'));
+  const deleteButtons = Array.from(ganttGrid.querySelectorAll('[data-delete-item]'));
+
+  editButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const item = scheduleItems.find((entry) => entry.id === button.getAttribute('data-edit-item'));
+      if (!item) {
+        return;
+      }
+
+      openScheduleDialog(item);
+    });
+  });
+
+  deleteButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const item = scheduleItems.find((entry) => entry.id === button.getAttribute('data-delete-item'));
+      if (!item) {
+        return;
+      }
+
+      openDeleteDialog(item);
+    });
+  });
+}
+
+function openScheduleDialog(item = null) {
+  editingItemId = item?.id || null;
+  scheduleForm?.reset();
+
+  if (item) {
+    scheduleDialogTitle.textContent = 'Eintrag bearbeiten';
+    scheduleSubmitButton.textContent = 'Änderungen speichern';
+    scheduleForm.elements.title.value = item.title;
+    scheduleForm.elements.startDate.value = item.start_date;
+    scheduleForm.elements.endDate.value = item.end_date;
+  } else {
+    scheduleDialogTitle.textContent = 'Eintrag erstellen';
+    scheduleSubmitButton.textContent = 'Speichern';
+  }
+
+  scheduleDialog?.showModal();
+}
+
+function closeScheduleDialog() {
+  editingItemId = null;
+  scheduleForm?.reset();
+  scheduleDialog?.close();
+}
+
+function openDeleteDialog(item) {
+  pendingDeleteItem = item;
+  deleteMessage.textContent = `Möchtest du das Item „${item.title}“ wirklich löschen?`;
+  deleteDialog?.showModal();
+}
+
+function closeDeleteDialog() {
+  pendingDeleteItem = null;
+  deleteDialog?.close();
 }
 
 function parseDateString(value) {

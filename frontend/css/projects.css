@@ -127,13 +127,13 @@ body {
 
 .schedule-form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin: 0;
 }
 
-.schedule-form.is-hidden { display: none; }
 .schedule-form .modal-actions { grid-column: 1 / -1; }
+.schedule-form h3 { margin: 0 0 .2rem; }
 
 .gantt-controls {
   display: flex;
@@ -161,10 +161,11 @@ body {
 .gantt-rows { display: grid; gap: .5rem; }
 .gantt-row {
   display: grid;
-  grid-template-columns: minmax(120px, 180px) 1fr;
+  grid-template-columns: minmax(220px, 280px) 1fr;
   gap: .7rem;
   align-items: center;
 }
+.gantt-row-meta { display: grid; gap: .45rem; }
 .gantt-row-title { font-size: .9rem; color: var(--text); }
 .gantt-row-track {
   position: relative;
@@ -180,6 +181,13 @@ body {
   border-radius: 999px;
   background: #2f3437;
 }
+
+.project-modal .danger {
+  background: #b42318;
+  border-color: #b42318;
+}
+
+.project-modal .danger:hover { background: #981b12; border-color: #981b12; }
 
 @media (max-width: 780px) {
   .project-main-panel { grid-template-columns: 1fr; }

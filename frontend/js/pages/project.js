@@ -82,8 +82,9 @@ scheduleForm?.addEventListener('submit', async (event) => {
   const titleValue = String(formData.get('title') || '').trim();
   const startDate = String(formData.get('startDate') || '');
   const endDate = String(formData.get('endDate') || '');
+  const colorValue = String(formData.get('color') || '');
 
-  if (!titleValue || !startDate || !endDate) {
+  if (!titleValue || !startDate || !endDate || !colorValue) {
     scheduleStatus.textContent = 'Bitte alle Felder ausfüllen.';
     return;
   }
@@ -102,6 +103,7 @@ scheduleForm?.addEventListener('submit', async (event) => {
           title: titleValue,
           start_date: startDate,
           end_date: endDate,
+          color: colorValue,
         })
         .eq('id', editingItemId)
         .eq('project_id', projectId)
@@ -110,6 +112,7 @@ scheduleForm?.addEventListener('submit', async (event) => {
         title: titleValue,
         start_date: startDate,
         end_date: endDate,
+        color: colorValue,
       });
 
   const { error } = await operation;
@@ -174,7 +177,7 @@ async function loadScheduleItems() {
 
   const { data, error } = await supabase
     .from('project_schedule_items')
-    .select('id, title, start_date, end_date, created_at')
+    .select('id, title, start_date, end_date, color, created_at')
     .eq('project_id', projectId)
     .order('start_date', { ascending: true });
 
@@ -217,7 +220,7 @@ function renderGantt() {
   const dayCells = Array.from({ length: 35 })
     .map((_, index) => {
       const day = addDays(visibleStartDate, index);
-      return `<div class="gantt-day-cell">${day.toLocaleDateString('de-DE', { weekday: 'short' }).slice(0, 2)}<span>${day.getDate()}</span></div>`;
+      return `<div class="gantt-day-cell">${getWeekdayLabel(day)}</div>`;
     })
     .join('');
 
@@ -241,7 +244,7 @@ function renderGantt() {
         <div class="gantt-row">
           <div class="gantt-row-title">${escapeHtml(item.title)}</div>
           <div class="gantt-row-track">
-            <button type="button" class="gantt-row-bar" data-edit-item="${item.id}" style="left: calc(${startOffsetDays} * (100% / 35)); width: calc(${spanDays} * (100% / 35));" aria-label="Eintrag ${escapeHtml(item.title)} bearbeiten"></button>
+            <button type="button" class="gantt-row-bar" data-edit-item="${item.id}" style="left: calc(${startOffsetDays} * (100% / 35)); width: calc(${spanDays} * (100% / 35)); background: ${escapeHtml(item.color || '#D6E2E9')};" aria-label="Eintrag ${escapeHtml(item.title)} bearbeiten"></button>
           </div>
         </div>
       `;
@@ -285,10 +288,12 @@ function openScheduleDialog(item = null) {
     scheduleForm.elements.title.value = item.title;
     scheduleForm.elements.startDate.value = item.start_date;
     scheduleForm.elements.endDate.value = item.end_date;
+    scheduleForm.elements.color.value = item.color || '#D6E2E9';
   } else {
     scheduleDialogTitle.textContent = 'Eintrag erstellen';
     scheduleSubmitButton.textContent = 'Speichern';
     removeScheduleItemButton?.classList.add('is-hidden');
+    scheduleForm.elements.color.value = '#D6E2E9';
   }
 
   scheduleDialog?.showModal();
@@ -302,6 +307,11 @@ function closeScheduleDialog() {
 
 function parseDateString(value) {
   return new Date(`${value}T00:00:00`);
+}
+
+function getWeekdayLabel(date) {
+  const labels = ['SO', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA'];
+  return labels[date.getDay()] || '';
 }
 
 function getStartOfIsoWeek(date) {

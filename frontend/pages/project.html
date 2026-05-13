@@ -63,19 +63,11 @@
                   <input type="date" name="endDate" required />
                 </label>
                 <div class="modal-actions">
+                  <button type="button" class="danger ghost is-hidden" data-remove-schedule-item>Eintrag entfernen</button>
                   <button type="button" class="secondary" data-cancel-schedule-item>Abbrechen</button>
                   <button type="submit" data-schedule-submit>Speichern</button>
                 </div>
               </form>
-            </dialog>
-
-            <dialog class="project-modal" data-delete-dialog>
-              <h3>Eintrag löschen</h3>
-              <p data-delete-message>Möchtest du diesen Eintrag wirklich löschen?</p>
-              <div class="modal-actions">
-                <button type="button" class="secondary" data-cancel-delete>Abbrechen</button>
-                <button type="button" class="danger" data-confirm-delete>Ja, löschen</button>
-              </div>
             </dialog>
           </section>
         </div>

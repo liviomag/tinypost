@@ -90,3 +90,99 @@ body {
     width: 100%;
   }
 }
+
+.project-view-layout {
+  width: min(1280px, 94vw);
+}
+
+.project-main-panel {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1rem;
+}
+
+.project-side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.side-nav-item {
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+}
+
+.side-nav-item:hover { background: #fff; color: var(--text); }
+.side-nav-item.is-active { background: #fff; color: var(--text); border-color: var(--border); }
+
+.project-section h2 { margin-top: 0; }
+.project-section.is-hidden { display: none; }
+
+.ablauf-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.status-text { min-height: 1.2rem; color: var(--text-muted); margin-bottom: .6rem; }
+
+.schedule-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.schedule-form.is-hidden { display: none; }
+.schedule-form .modal-actions { grid-column: 1 / -1; }
+
+.gantt-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gantt-wrap { overflow-x: auto; margin-top: .6rem; }
+.gantt-grid { min-width: 760px; display: grid; gap: .5rem; }
+.gantt-grid-head, .gantt-grid-days {
+  display: grid;
+  grid-template-columns: repeat(35, minmax(16px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.gantt-week-header, .gantt-day-cell { background: #fff; padding: .35rem .3rem; font-size: .75rem; }
+.gantt-week-header { font-weight: 600; color: var(--text); }
+.gantt-week-header span, .gantt-day-cell span { display: block; color: var(--text-muted); font-weight: 400; }
+
+.gantt-rows { display: grid; gap: .5rem; }
+.gantt-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 1fr;
+  gap: .7rem;
+  align-items: center;
+}
+.gantt-row-title { font-size: .9rem; color: var(--text); }
+.gantt-row-track {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  height: 22px;
+}
+.gantt-row-bar {
+  position: absolute;
+  top: 3px;
+  height: 14px;
+  border-radius: 999px;
+  background: #2f3437;
+}
+
+@media (max-width: 780px) {
+  .project-main-panel { grid-template-columns: 1fr; }
+  .project-side-nav { flex-direction: row; }
+  .gantt-row { grid-template-columns: 1fr; }
+}

@@ -174,9 +174,9 @@ body {
 .gantt-row-title { font-size: .9rem; color: var(--text); }
 .gantt-row-track {
   position: relative;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   height: 22px;
   overflow: hidden;
 }

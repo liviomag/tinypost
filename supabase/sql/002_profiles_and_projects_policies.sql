@@ -33,25 +33,26 @@ create policy "profiles_delete_own"
 on public.profiles for delete
 using (auth.uid() = id);
 
--- Replace invalid CREATE POLICY IF NOT EXISTS usage on projects
+-- Projects policies (only if projects table already exists)
+do $$
+begin
+  if to_regclass('public.projects') is null then
+    raise notice 'Skipping projects policies: relation public.projects does not exist yet.';
+    return;
+  end if;
 
-drop policy if exists "projects_select_own" on public.projects;
-create policy "projects_select_own"
-on public.projects for select
-using (auth.uid() = owner_id);
+  execute 'alter table public.projects enable row level security';
 
-drop policy if exists "projects_insert_own" on public.projects;
-create policy "projects_insert_own"
-on public.projects for insert
-with check (auth.uid() = owner_id);
+  execute 'drop policy if exists "projects_select_own" on public.projects';
+  execute 'create policy "projects_select_own" on public.projects for select using (auth.uid() = owner_id)';
 
-drop policy if exists "projects_update_own" on public.projects;
-create policy "projects_update_own"
-on public.projects for update
-using (auth.uid() = owner_id)
-with check (auth.uid() = owner_id);
+  execute 'drop policy if exists "projects_insert_own" on public.projects';
+  execute 'create policy "projects_insert_own" on public.projects for insert with check (auth.uid() = owner_id)';
 
-drop policy if exists "projects_delete_own" on public.projects;
-create policy "projects_delete_own"
-on public.projects for delete
-using (auth.uid() = owner_id);
+  execute 'drop policy if exists "projects_update_own" on public.projects';
+  execute 'create policy "projects_update_own" on public.projects for update using (auth.uid() = owner_id) with check (auth.uid() = owner_id)';
+
+  execute 'drop policy if exists "projects_delete_own" on public.projects';
+  execute 'create policy "projects_delete_own" on public.projects for delete using (auth.uid() = owner_id)';
+end
+$$;
